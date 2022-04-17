@@ -26,7 +26,6 @@ create table files (
     id serial primary key,
     account_id uuid not null,
     uploaded_at timestamp not null,
-    original_filename varchar(255) not null,
-    filepath varchar(255) not null,
+    original_filename varchar(400) not null,
     constraint fk_account_files_account_id foreign key (account_id) references accounts(id)
 );

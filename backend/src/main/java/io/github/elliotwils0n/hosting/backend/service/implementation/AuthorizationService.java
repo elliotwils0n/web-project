@@ -9,6 +9,7 @@ import io.github.elliotwils0n.hosting.backend.repository.AccessTokensRepository;
 import io.github.elliotwils0n.hosting.backend.repository.RefreshTokensRepository;
 import io.github.elliotwils0n.hosting.backend.service.AuthorizationServiceInterface;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -24,6 +25,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -177,6 +180,7 @@ public class AuthorizationService implements AuthorizationServiceInterface {
                 .setSigningKey(getTokenSigningKey())
                 .build()
                 .parseClaimsJws(jwtString);
+
     }
 
     private Jws<Claims> getParsedRefreshToken(String refreshToken) {

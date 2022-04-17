@@ -1,10 +1,8 @@
 package io.github.elliotwils0n.hosting.backend.service;
 
-import io.github.elliotwils0n.hosting.backend.infrastructure.ServerGenericException;
+import io.github.elliotwils0n.hosting.backend.infrastructure.GenericServerException;
 import io.github.elliotwils0n.hosting.backend.model.Credentials;
 import io.github.elliotwils0n.hosting.backend.model.TokenPair;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 
 public interface AuthorizationServiceInterface {
 
@@ -14,13 +12,13 @@ public interface AuthorizationServiceInterface {
 
     boolean isAccessTokenValid(String accessToken);
 
-    class InvalidCredentialsException extends ServerGenericException {
+    class InvalidCredentialsException extends GenericServerException {
         public InvalidCredentialsException() {
             super("Authorization failed. Invalid Credentials provided.");
         }
     }
 
-    class InvalidRefreshedTokenProvided extends ServerGenericException {
+    class InvalidRefreshedTokenProvided extends GenericServerException {
         public InvalidRefreshedTokenProvided() {
             super("Refreshing access token failed. Invalid refreshed token provided.");
         }

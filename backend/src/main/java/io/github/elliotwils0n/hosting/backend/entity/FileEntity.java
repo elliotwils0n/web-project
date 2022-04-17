@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 public class FileEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.ALL)
@@ -34,10 +34,13 @@ public class FileEntity {
     @Column(name = "uploaded_at")
     private LocalDateTime uploadedAt;
 
-    @Column(name = "original_filename", length = 255)
+    @Column(name = "original_filename", length = 400)
     private String originalFilename;
 
-    @Column(name = "filepath", length = 255)
-    private String filepath;
+
+    public FileEntity(AccountEntity account, String originalFilename) {
+        this.account = account;
+        this.originalFilename = originalFilename;
+    }
 
 }

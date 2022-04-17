@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @Slf4j
 public class AccountsService implements AccountsServiceInterface {
@@ -42,5 +44,9 @@ public class AccountsService implements AccountsServiceInterface {
         AccountEntity account = accountsRepository.findByUsername(username).orElseThrow(AccountDoesNotExist::new);
 
         return new AccountDto(account.getId(), account.getUsername(), account.getPasswordHash());
+    }
+
+    public AccountEntity findByUUID(UUID accountId) {
+        return accountsRepository.findById(accountId).orElseThrow(AccountDoesNotExist::new);
     }
 }

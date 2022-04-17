@@ -20,12 +20,13 @@ public class ControllerAspect {
     public Object logAccess(ProceedingJoinPoint pjp) throws Throwable {
         try {
             return pjp.proceed();
-        } catch (ServerGenericException e) {
+        } catch (GenericServerException e) {
             return ResponseEntity
                     .badRequest()
                     .body(new ServerMessage(HttpStatus.BAD_REQUEST.toString(), e.getMessage()));
         }
         catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity
                     .internalServerError()
                     .body(new ServerMessage(HttpStatus.INTERNAL_SERVER_ERROR.toString(), "Internal server error."));
@@ -36,4 +37,5 @@ public class ControllerAspect {
     private void anyPublicMethodInController() {
         // no implementation, as this is only a pointcut definition
     }
+
 }
