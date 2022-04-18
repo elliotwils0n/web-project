@@ -7,6 +7,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -16,16 +17,16 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class ControllerAspect {
 
-    @Around("anyPublicMethodInController()")
-    public Object logAccess(ProceedingJoinPoint pjp) throws Throwable {
+    @Around("customAuthorizationFilter() && anyPublicMethodInController()")
+    @Order(1)
+    public Object catchExceptions(ProceedingJoinPoint pjp) throws Throwable {
         try {
             return pjp.proceed();
         } catch (GenericServerException e) {
             return ResponseEntity
                     .badRequest()
                     .body(new ServerMessage(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity
                     .internalServerError()
@@ -35,6 +36,12 @@ public class ControllerAspect {
 
     @Pointcut("execution(public * io.github.elliotwils0n.hosting.backend.controller.*Controller.*(..))")
     private void anyPublicMethodInController() {
+        // no implementation, as this is only a pointcut definition
+    }
+
+    //FIXME this does not work
+    @Pointcut("execution(* io.github.elliotwils0n.hosting.backend.config.CustomAuthorizationFilter.*(..))")
+    private void customAuthorizationFilter() {
         // no implementation, as this is only a pointcut definition
     }
 

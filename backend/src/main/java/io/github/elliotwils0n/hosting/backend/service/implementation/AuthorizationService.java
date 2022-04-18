@@ -9,6 +9,7 @@ import io.github.elliotwils0n.hosting.backend.repository.AccessTokensRepository;
 import io.github.elliotwils0n.hosting.backend.repository.RefreshTokensRepository;
 import io.github.elliotwils0n.hosting.backend.service.AuthorizationServiceInterface;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

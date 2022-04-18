@@ -1,8 +1,9 @@
 package io.github.elliotwils0n.hosting.backend.config;
 
+import ch.qos.logback.core.encoder.EchoEncoder;
+import io.github.elliotwils0n.hosting.backend.infrastructure.GenericServerException;
 import io.github.elliotwils0n.hosting.backend.model.Role;
 import io.github.elliotwils0n.hosting.backend.service.implementation.AuthorizationService;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,7 +19,6 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
-@Slf4j
 public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
     private final AuthorizationService authorizationService;
@@ -30,7 +30,8 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         Optional<String> authHeader = Optional.ofNullable(request.getHeader(HttpHeaders.AUTHORIZATION));
-        if(authHeader.isPresent() && authHeader.get().startsWith("Bearer ")){
+
+        if (authHeader.isPresent() && authHeader.get().startsWith("Bearer ")) {
             String token = authHeader.get().replace("Bearer ", "");
             Optional<UUID> accountId = authorizationService.getAccountIdFromAccessToken(token);
             if (authorizationService.isAccessTokenValid(token) && accountId.isPresent()) {
