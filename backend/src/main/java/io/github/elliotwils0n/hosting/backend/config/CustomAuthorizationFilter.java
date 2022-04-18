@@ -34,7 +34,8 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
             String token = authHeader.get().replace("Bearer ", "");
             Optional<UUID> accountId = authorizationService.getAccountIdFromAccessToken(token);
             if (authorizationService.isAccessTokenValid(token) && accountId.isPresent()) {
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(accountId.get(), null, Collections.singleton(new SimpleGrantedAuthority(Role.AUTHORIZED.getName())));
+                UsernamePasswordAuthenticationToken authenticationToken =
+                        new UsernamePasswordAuthenticationToken(accountId.get(), null, Collections.singleton(new SimpleGrantedAuthority(Role.AUTHORIZED.getName())));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
         }

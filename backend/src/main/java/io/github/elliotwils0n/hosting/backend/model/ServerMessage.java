@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class ServerMessage {
 
-    private String status;
+    private int status;
     private String message;
 
 }

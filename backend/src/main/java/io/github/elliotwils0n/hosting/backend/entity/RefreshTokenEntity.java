@@ -23,7 +23,7 @@ public class RefreshTokenEntity {
     @Column(name = "account_id")
     private UUID accountId;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.DETACH)
     @PrimaryKeyJoinColumn
     private AccountEntity account;
 

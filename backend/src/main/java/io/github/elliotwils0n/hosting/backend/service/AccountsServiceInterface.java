@@ -4,9 +4,13 @@ import io.github.elliotwils0n.hosting.backend.dto.AccountDto;
 import io.github.elliotwils0n.hosting.backend.infrastructure.GenericServerException;
 import io.github.elliotwils0n.hosting.backend.model.Credentials;
 
+import java.util.UUID;
+
 public interface AccountsServiceInterface {
 
     AccountDto createAccount(Credentials credentials);
+
+    void deleteAccount(UUID accountId);
 
     boolean isPasswordValid(Credentials credentials);
 

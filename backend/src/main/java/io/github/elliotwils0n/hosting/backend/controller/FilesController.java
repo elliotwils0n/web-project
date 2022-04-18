@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,7 +40,7 @@ public class FilesController {
     @PostMapping("/upload")
     public ResponseEntity<ServerMessage> uploadFile(Principal principal, @RequestAttribute("file") MultipartFile file) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
         filesService.saveFile(UUID.fromString(principal.getName()), file);
-        return ResponseEntity.ok(new ServerMessage(HttpStatus.OK.toString(), "File uploaded successfully"));
+        return ResponseEntity.ok(new ServerMessage(HttpStatus.OK.value(), "File uploaded successfully"));
     }
 
     @GetMapping("/download/{fileId}")
@@ -53,6 +54,12 @@ public class FilesController {
                 .header(HttpHeaders.CONTENT_TYPE, URLConnection.guessContentTypeFromName(file.getFilename()))
                 .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
                 .body(file.getContent());
+    }
+
+    @DeleteMapping("/delete/{fileId}")
+    public ResponseEntity<ServerMessage> deleteFile(Principal principal, @PathVariable("fileId") Long fileId) throws IOException {
+        filesService.deleteFile(UUID.fromString(principal.getName()), fileId);
+        return ResponseEntity.ok(new ServerMessage(HttpStatus.OK.value(), "File deleted successfully."));
     }
 
     @GetMapping("/list")

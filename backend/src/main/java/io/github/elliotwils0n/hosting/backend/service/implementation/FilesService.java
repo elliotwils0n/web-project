@@ -1,20 +1,22 @@
 package io.github.elliotwils0n.hosting.backend.service.implementation;
 
 import io.github.elliotwils0n.hosting.backend.dto.FileDto;
-import io.github.elliotwils0n.hosting.backend.entity.AccountEntity;
 import io.github.elliotwils0n.hosting.backend.entity.FileEntity;
+import io.github.elliotwils0n.hosting.backend.model.AccountDeletedEvent;
 import io.github.elliotwils0n.hosting.backend.model.FileModel;
 import io.github.elliotwils0n.hosting.backend.repository.FilesRepository;
 import io.github.elliotwils0n.hosting.backend.service.FilesServiceInterface;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,9 +32,6 @@ import java.util.stream.Collectors;
 public class FilesService implements FilesServiceInterface {
 
     @Autowired
-    private AccountsService accountsService;
-
-    @Autowired
     private FilesRepository filesRepository;
 
     @Autowired
@@ -43,10 +42,10 @@ public class FilesService implements FilesServiceInterface {
 
     @Override
     public void saveFile(UUID accountId, MultipartFile file) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
-        String userDirectory = getUserDirectory(accountId);
+        prepareUserDirectory(accountId);
 
         FileEntity fileEntity = saveFileInfoInDatabase(accountId, file.getOriginalFilename());
-        String filepath = String.format("%s/%s.enc", userDirectory, fileEntity.getId());
+        String filepath = String.format("%s/%s/%s.enc", rootDirectory, accountId, fileEntity.getId());
 
         Files.createFile(Path.of(filepath));
         byte[] encryptedFile = encryptionService.encrypt(file.getBytes());
@@ -55,8 +54,7 @@ public class FilesService implements FilesServiceInterface {
 
     @Override
     public FileModel getFile(UUID accountId, Long fileId) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
-        AccountEntity accountEntity = accountsService.findByUUID(accountId);
-        FileEntity fileEntity = filesRepository.findByIdAndAccount(fileId, accountEntity).orElseThrow(FileLinkedToAccountNotFoundException::new);
+        FileEntity fileEntity = filesRepository.findByIdAndAccountId(fileId, accountId).orElseThrow(FileLinkedToAccountNotFoundException::new);
         String filepath = String.format("%s/%s/%s.enc", rootDirectory, accountId, fileId);
         byte [] encryptedFile = Files.readAllBytes(Path.of(filepath));
 
@@ -64,25 +62,42 @@ public class FilesService implements FilesServiceInterface {
     }
 
     @Override
+    @Transactional
+    public void deleteFile(UUID accountId, Long fileId) throws IOException {
+        FileEntity fileToDelete = filesRepository.findByIdAndAccountId(fileId, accountId).orElseThrow(FileLinkedToAccountNotFoundException::new);
+
+        String filepath = String.format("%s/%s/%s.enc", rootDirectory, accountId, fileId);
+        Files.deleteIfExists(Path.of(filepath));
+        filesRepository.delete(fileToDelete);
+    }
+
+    @Override
     public List<FileDto> getAllAccountFiles(UUID accountId) {
-        AccountEntity account = accountsService.findByUUID(accountId);
-        return filesRepository.findAllByAccount(account).stream()
+        return filesRepository.findAllByAccountId(accountId).stream()
                 .map(file -> new FileDto(file.getId(), file.getUploadedAt(), file.getOriginalFilename()))
                 .collect(Collectors.toList());
     }
 
+    @EventListener
+    public void onAccountDeletion(AccountDeletedEvent accountDeletedEvent) throws IOException {
+        for (FileDto file : accountDeletedEvent.getAccountFiles()) {
+            String filepath = String.format("%s/%s/%s.enc", rootDirectory, accountDeletedEvent.getAccountId(), file.getFileId());
+            Files.deleteIfExists(Path.of(filepath));
+        }
+        String userDirectory = String.format("%s/%s", rootDirectory, accountDeletedEvent.getAccountId());
+        Files.deleteIfExists(Path.of(userDirectory));
+    }
+
     private FileEntity saveFileInfoInDatabase(UUID accountId, String originalFilename) {
-        AccountEntity account = accountsService.findByUUID(accountId);
-        FileEntity fileEntity = new FileEntity(account, originalFilename);
+        FileEntity fileEntity = new FileEntity(accountId, originalFilename);
         return filesRepository.save(fileEntity);
     }
 
-    private String getUserDirectory(UUID accountId) throws IOException {
+    private void prepareUserDirectory(UUID accountId) throws IOException {
         String userDirectory = String.format("%s/%s", rootDirectory, accountId);
         if (!Files.exists(Path.of(userDirectory))) {
             Files.createDirectory(Path.of(userDirectory));
         }
-        return userDirectory;
     }
 
 }

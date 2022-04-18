@@ -15,6 +15,12 @@ public class TestController {
 
     @GetMapping("/get")
     public ResponseEntity<ServerMessage> test(Principal principal){
-        return ResponseEntity.ok(new ServerMessage(HttpStatus.OK.toString(), String.format("Hey %s, api works!", principal.getName())));
+        return ResponseEntity.ok(new ServerMessage(HttpStatus.OK.value(), String.format("Hey %s, api works!", principal.getName())));
     }
+
+    //todo
+    /*
+    use master key from properties to encrypt different keys for every file
+    fix exception aspect - custom authorization filter
+     */
 }

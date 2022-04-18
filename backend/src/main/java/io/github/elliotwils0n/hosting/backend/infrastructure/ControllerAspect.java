@@ -23,13 +23,13 @@ public class ControllerAspect {
         } catch (GenericServerException e) {
             return ResponseEntity
                     .badRequest()
-                    .body(new ServerMessage(HttpStatus.BAD_REQUEST.toString(), e.getMessage()));
+                    .body(new ServerMessage(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
         }
         catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity
                     .internalServerError()
-                    .body(new ServerMessage(HttpStatus.INTERNAL_SERVER_ERROR.toString(), "Internal server error."));
+                    .body(new ServerMessage(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error."));
         }
     }
 

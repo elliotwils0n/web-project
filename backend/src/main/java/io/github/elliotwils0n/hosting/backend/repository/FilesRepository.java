@@ -7,11 +7,12 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface FilesRepository extends JpaRepository<FileEntity, Long> {
 
-    Optional<FileEntity> findByIdAndAccount(Long id, AccountEntity account);
+    Optional<FileEntity> findByIdAndAccountId(Long id, UUID accountId);
 
-    List<FileEntity> findAllByAccount(AccountEntity account);
+    List<FileEntity> findAllByAccountId(UUID accountId);
 }

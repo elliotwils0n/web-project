@@ -18,8 +18,13 @@ import java.util.UUID;
 public interface FilesServiceInterface {
 
     void saveFile(UUID accountId, MultipartFile file) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException;
+
     FileModel getFile(UUID accountId, Long fileId) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException;
+
+    void deleteFile(UUID accountId, Long fileId) throws IOException;
+
     List<FileDto> getAllAccountFiles(UUID accountId);
+
 
     class FileLinkedToAccountNotFoundException extends GenericServerException {
         public FileLinkedToAccountNotFoundException() {

@@ -1,17 +1,23 @@
 package io.github.elliotwils0n.hosting.backend.service.implementation;
 
 import io.github.elliotwils0n.hosting.backend.dto.AccountDto;
+import io.github.elliotwils0n.hosting.backend.dto.FileDto;
 import io.github.elliotwils0n.hosting.backend.entity.AccountEntity;
+import io.github.elliotwils0n.hosting.backend.model.AccountDeletedEvent;
 import io.github.elliotwils0n.hosting.backend.model.Credentials;
 import io.github.elliotwils0n.hosting.backend.repository.AccountsRepository;
 import io.github.elliotwils0n.hosting.backend.service.AccountsServiceInterface;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -19,6 +25,9 @@ public class AccountsService implements AccountsServiceInterface {
 
     @Autowired
     private AccountsRepository accountsRepository;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     @Lazy
     @Autowired
@@ -34,6 +43,19 @@ public class AccountsService implements AccountsServiceInterface {
     }
 
     @Override
+    @Transactional
+    public void deleteAccount(UUID accountId) {
+        AccountEntity account = accountsRepository.findById(accountId).orElseThrow(AccountDoesNotExist::new);
+
+        List<FileDto> accountFiles = account.getFiles().stream()
+                .map(file -> new FileDto(file.getId(), file.getUploadedAt(), file.getOriginalFilename()))
+                .collect(Collectors.toList());
+        eventPublisher.publishEvent(new AccountDeletedEvent(this, accountId, accountFiles));
+
+        accountsRepository.delete(account);
+    }
+
+    @Override
     public boolean isPasswordValid(Credentials credentials) {
         AccountEntity account = accountsRepository.findByUsername(credentials.getUsername()).orElseThrow(AccountDoesNotExist::new);
 
@@ -46,7 +68,4 @@ public class AccountsService implements AccountsServiceInterface {
         return new AccountDto(account.getId(), account.getUsername(), account.getPasswordHash());
     }
 
-    public AccountEntity findByUUID(UUID accountId) {
-        return accountsRepository.findById(accountId).orElseThrow(AccountDoesNotExist::new);
-    }
 }

@@ -15,6 +15,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "files")
@@ -26,8 +27,11 @@ public class FileEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.ALL)
-    @JoinColumn(name = "account_id", nullable = false)
+    @Column(name = "account_id", nullable = false)
+    public UUID accountId;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.DETACH)
+    @JoinColumn(name = "account_id", nullable = false, insertable = false, updatable = false)
     private AccountEntity account;
 
     @CreationTimestamp
@@ -38,8 +42,8 @@ public class FileEntity {
     private String originalFilename;
 
 
-    public FileEntity(AccountEntity account, String originalFilename) {
-        this.account = account;
+    public FileEntity(UUID accountId, String originalFilename) {
+        this.accountId = accountId;
         this.originalFilename = originalFilename;
     }
 
