@@ -1,0 +1,24 @@
+
+<div class="mb-2">
+  <a class="btn btn-sm btn-outline-secondary pr-3" (click)="refreshFileList()">Upload file</a>
+  <a class="btn btn-sm btn-outline-secondary" (click)="refreshFileList()">Refresh list</a>
+</div>
+
+<table class="table table-sm table-striped">
+    <thead class="table-dark">
+      <tr>
+        <th scope="col" class="col-1">#</th>
+        <th scope="col" class="col-6">Original filename</th>
+        <th scope="col" class="col-3">Uploaded at</th>
+        <th scope="col" class="col-3">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let file of files">
+        <th scope="row">{{file.fileId}}</th>
+        <td><a class="btn btn-sm" (click)="downloadFile(file.fileId)">{{file.originalFilename}}</a></td>
+        <td>{{file.uploadedAt}}</td>
+        <td><a class="btn btn-sm" (click)="deleteFile(file.fileId)"><a class="btn btn-sm btn-outline-danger">x</a></a></td>
+      </tr>
+    </tbody>
+  </table>

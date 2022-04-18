@@ -1,0 +1,24 @@
+<div class="containter text-center">
+    <h1 class="mb-5">Sign in</h1>
+
+    <form class="col-4 m-auto" #signInForm="ngForm" (submit)="onSave(signInForm)">
+        <div class="form-outline mb-4">
+          <input type="text" id="username" required class="form-control" name="username" [ngModel]="credentials?.username" />
+          <label class="form-label" for="username">username</label>
+        </div>
+      
+        <div class="form-outline mb-4">
+          <input type="password" id="password" required class="form-control" name="password" [ngModel]="credentials?.password"  />
+          <label class="form-label" for="password">password</label>
+        </div>
+      
+        <button type="submit" class="btn btn-primary btn-block mb-4" [disabled]="!signInForm.valid">Sign in</button>
+      
+        <div>
+          <p>Not a member? <a routerLink="/signup" routerLinkActive="active">Register</a>.</p>
+        </div>
+      </form>
+</div>
+
+
+
