@@ -1,10 +1,9 @@
 package io.github.elliotwils0n.hosting.backend.config;
 
-import ch.qos.logback.core.encoder.EchoEncoder;
-import io.github.elliotwils0n.hosting.backend.infrastructure.GenericServerException;
 import io.github.elliotwils0n.hosting.backend.model.Role;
 import io.github.elliotwils0n.hosting.backend.service.implementation.AuthorizationService;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,8 +32,18 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
         if (authHeader.isPresent() && authHeader.get().startsWith("Bearer ")) {
             String token = authHeader.get().replace("Bearer ", "");
-            Optional<UUID> accountId = authorizationService.getAccountIdFromAccessToken(token);
-            if (authorizationService.isAccessTokenValid(token) && accountId.isPresent()) {
+
+            boolean validToken = false;
+            Optional<UUID> accountId = Optional.empty();
+
+            try {
+                validToken = authorizationService.isAccessTokenValid(token);
+                accountId = authorizationService.getAccountIdFromAccessToken(token);
+            } catch (Exception e) {
+                response.setStatus(HttpStatus.FORBIDDEN.value());
+            }
+
+            if (validToken && accountId.isPresent()) {
                 UsernamePasswordAuthenticationToken authenticationToken =
                         new UsernamePasswordAuthenticationToken(accountId.get(), null, Collections.singleton(new SimpleGrantedAuthority(Role.AUTHORIZED.getName())));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);

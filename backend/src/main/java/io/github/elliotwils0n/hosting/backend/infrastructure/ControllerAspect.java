@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class ControllerAspect {
 
-    @Around("customAuthorizationFilter() && anyPublicMethodInController()")
+    @Around("anyPublicMethodInController()")
     @Order(1)
     public Object catchExceptions(ProceedingJoinPoint pjp) throws Throwable {
         try {
@@ -36,12 +36,6 @@ public class ControllerAspect {
 
     @Pointcut("execution(public * io.github.elliotwils0n.hosting.backend.controller.*Controller.*(..))")
     private void anyPublicMethodInController() {
-        // no implementation, as this is only a pointcut definition
-    }
-
-    //FIXME this does not work
-    @Pointcut("execution(* io.github.elliotwils0n.hosting.backend.config.CustomAuthorizationFilter.*(..))")
-    private void customAuthorizationFilter() {
         // no implementation, as this is only a pointcut definition
     }
 
