@@ -47,8 +47,9 @@ public class FilesController {
     public ResponseEntity<byte[]> downloadFile(
             Principal principal,
             @PathVariable("fileId") Long fileId,
-            @RequestParam(name = "preview", defaultValue = "false") boolean preview) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
-    FileModel file = filesService.getFile(UUID.fromString(principal.getName()), fileId);
+            @RequestParam(name = "preview", defaultValue = "false") boolean preview
+    ) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+        FileModel file = filesService.getFile(UUID.fromString(principal.getName()), fileId);
         String contentDisposition = preview ? String.format("inline; filename=%s", file.getFilename()) : String.format("attachment; filename=%s", file.getFilename());
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, URLConnection.guessContentTypeFromName(file.getFilename()))
