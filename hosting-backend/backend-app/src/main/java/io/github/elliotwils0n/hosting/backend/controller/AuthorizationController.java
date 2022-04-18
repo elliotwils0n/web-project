@@ -6,7 +6,7 @@ import io.github.elliotwils0n.hosting.backend.service.implementation.Authorizati
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -32,6 +32,11 @@ public class AuthorizationController {
         TokenPair tokenPair = authorizationService.refreshToken(refreshToken.replace("Bearer ", ""));
 
         return ResponseEntity.ok(tokenPair);
+    }
+
+    @GetMapping("/test")
+    public ResponseEntity<String> test(){
+        return ResponseEntity.ok().build();
     }
 
 }
