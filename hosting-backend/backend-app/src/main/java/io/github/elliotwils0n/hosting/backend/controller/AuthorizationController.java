@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin("http://localhost:4200")
 public class AuthorizationController {
 
     @Autowired

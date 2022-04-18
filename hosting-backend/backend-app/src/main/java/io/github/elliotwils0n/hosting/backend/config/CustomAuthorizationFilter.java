@@ -2,6 +2,7 @@ package io.github.elliotwils0n.hosting.backend.config;
 
 import io.github.elliotwils0n.hosting.backend.model.Role;
 import io.github.elliotwils0n.hosting.backend.service.implementation.AuthorizationService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,6 +19,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
     private final AuthorizationService authorizationService;
@@ -42,7 +44,6 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
             } catch (Exception e) {
                 response.setStatus(HttpStatus.FORBIDDEN.value());
             }
-
             if (validToken && accountId.isPresent()) {
                 UsernamePasswordAuthenticationToken authenticationToken =
                         new UsernamePasswordAuthenticationToken(accountId.get(), null, Collections.singleton(new SimpleGrantedAuthority(Role.AUTHORIZED.getName())));

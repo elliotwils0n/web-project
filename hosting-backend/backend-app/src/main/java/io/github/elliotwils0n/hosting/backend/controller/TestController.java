@@ -12,7 +12,6 @@ import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/test/")
-@CrossOrigin("http://localhost:4200")
 public class TestController {
 
     @GetMapping("/get")

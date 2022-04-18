@@ -18,7 +18,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/accounts")
-@CrossOrigin("http://localhost:4200")
 public class AccountsController {
 
     @Autowired
