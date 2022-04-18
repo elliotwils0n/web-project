@@ -9,7 +9,6 @@ import io.github.elliotwils0n.hosting.backend.repository.AccessTokensRepository;
 import io.github.elliotwils0n.hosting.backend.repository.RefreshTokensRepository;
 import io.github.elliotwils0n.hosting.backend.service.AuthorizationServiceInterface;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -25,8 +24,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Base64;
 import java.util.Date;
-import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -43,8 +40,11 @@ public class AuthorizationService implements AuthorizationServiceInterface {
     @Autowired
     private RefreshTokensRepository refreshTokensRepository;
 
-    @Value("${authorization.token.expiration.time}")
-    private Long tokenExpirationTime;
+    @Value("${authorization.access.token.expiration}")
+    private Long accessTokenExpirationTime;
+
+    @Value("${authorization.refresh.token.expiration}")
+    private Long refreshTokenExpirationTime;
 
     @Value("${authorization.token.signing.secret}")
     private String tokenSigningSecret;
@@ -109,7 +109,7 @@ public class AuthorizationService implements AuthorizationServiceInterface {
                 entity -> {
                     entity.setAccessToken(refreshToken);
                     entity.setGeneratedAt(time);
-                    entity.setValidTo(time.plusMinutes(tokenExpirationTime));
+                    entity.setValidTo(time.plusMinutes(accessTokenExpirationTime));
                     accessTokensRepository.save(entity);
                 },
                 () -> {
@@ -117,7 +117,7 @@ public class AuthorizationService implements AuthorizationServiceInterface {
                     entity.setAccountId(accountId);
                     entity.setAccessToken(refreshToken);
                     entity.setGeneratedAt(time);
-                    entity.setValidTo(time.plusMinutes(tokenExpirationTime));
+                    entity.setValidTo(time.plusMinutes(accessTokenExpirationTime));
                     accessTokensRepository.save(entity);
                 });
 
@@ -134,7 +134,7 @@ public class AuthorizationService implements AuthorizationServiceInterface {
                 entity -> {
                     entity.setRefreshToken(refreshToken);
                     entity.setGeneratedAt(time);
-                    entity.setUsed(false);
+                    entity.setValidTo(time.plusMinutes(refreshTokenExpirationTime));
                     refreshTokensRepository.save(entity);
                 },
                 () -> {
@@ -142,7 +142,7 @@ public class AuthorizationService implements AuthorizationServiceInterface {
                     entity.setAccountId(accountId);
                     entity.setRefreshToken(refreshToken);
                     entity.setGeneratedAt(time);
-                    entity.setUsed(false);
+                    entity.setValidTo(time.plusMinutes(refreshTokenExpirationTime));
                     refreshTokensRepository.save(entity);
                 });
 
@@ -151,7 +151,7 @@ public class AuthorizationService implements AuthorizationServiceInterface {
 
     private String prepareAccessToken(UUID accountId, LocalDateTime time) {
         Date issuedAt = Date.from(Timestamp.valueOf(time).toInstant());
-        Date expiration = Date.from(Timestamp.valueOf(time.plusMinutes(tokenExpirationTime)).toInstant());
+        Date expiration = Date.from(Timestamp.valueOf(time.plusMinutes(accessTokenExpirationTime)).toInstant());
 
         return Jwts.builder()
                 .claim("account_id", accountId)
@@ -165,12 +165,14 @@ public class AuthorizationService implements AuthorizationServiceInterface {
 
     private String prepareRefreshToken(UUID accountId, LocalDateTime time) {
         Date issuedAt = Date.from(Timestamp.valueOf(time).toInstant());
+        Date expiration = Date.from(Timestamp.valueOf(time.plusMinutes(refreshTokenExpirationTime)).toInstant());
 
         return Jwts.builder()
                 .claim("account_id", accountId)
                 .setSubject("refresh_token")
                 .setId(UUID.randomUUID().toString())
                 .setIssuedAt(issuedAt)
+                .setExpiration(expiration)
                 .signWith(getTokenSigningKey())
                 .compact();
     }
@@ -189,7 +191,7 @@ public class AuthorizationService implements AuthorizationServiceInterface {
 
         Optional<RefreshTokenEntity> refreshTokenEntity = refreshTokensRepository.findByAccountId(accountId);
 
-        if(!claims.getBody().getSubject().equals("refresh_token") || refreshTokenEntity.isEmpty() || !refreshTokenEntity.get().getRefreshToken().equals(refreshToken)) {
+        if(!claims.getBody().getSubject().equals("refresh_token") || refreshTokenEntity.isEmpty() || refreshTokenEntity.get().getValidTo().isBefore(LocalDateTime.now()) || !refreshTokenEntity.get().getRefreshToken().equals(refreshToken)) {
             throw new InvalidRefreshedTokenProvided();
         }
 

@@ -38,13 +38,17 @@ public class FileEntity {
     @Column(name = "uploaded_at")
     private LocalDateTime uploadedAt;
 
-    @Column(name = "original_filename", length = 400)
+    @Column(name = "original_filename", length = 400, nullable = false)
     private String originalFilename;
 
+    @Column(name = "encryption_key", nullable = false)
+    private byte[] encryptionKey;
 
-    public FileEntity(UUID accountId, String originalFilename) {
+
+    public FileEntity(UUID accountId, String originalFilename, byte[] encryptionKey) {
         this.accountId = accountId;
         this.originalFilename = originalFilename;
+        this.encryptionKey = encryptionKey;
     }
 
 }

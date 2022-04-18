@@ -33,7 +33,7 @@ public class RefreshTokenEntity {
     @Column(name = "generated_at")
     private LocalDateTime generatedAt;
 
-    @Column(name = "used", nullable = false)
-    private boolean used;
+    @Column(name = "valid_to", nullable = false)
+    private LocalDateTime validTo;
 
 }

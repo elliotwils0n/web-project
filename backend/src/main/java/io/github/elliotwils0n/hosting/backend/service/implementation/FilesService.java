@@ -7,6 +7,7 @@ import io.github.elliotwils0n.hosting.backend.model.FileModel;
 import io.github.elliotwils0n.hosting.backend.repository.FilesRepository;
 import io.github.elliotwils0n.hosting.backend.service.FilesServiceInterface;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
@@ -18,11 +19,13 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -48,7 +51,7 @@ public class FilesService implements FilesServiceInterface {
         String filepath = String.format("%s/%s/%s.enc", rootDirectory, accountId, fileEntity.getId());
 
         Files.createFile(Path.of(filepath));
-        byte[] encryptedFile = encryptionService.encrypt(file.getBytes());
+        byte[] encryptedFile = encryptionService.encrypt(file.getBytes(), encryptionService.decryptKey(fileEntity.getEncryptionKey()));
         Files.write(Path.of(filepath), encryptedFile);
     }
 
@@ -58,7 +61,7 @@ public class FilesService implements FilesServiceInterface {
         String filepath = String.format("%s/%s/%s.enc", rootDirectory, accountId, fileId);
         byte [] encryptedFile = Files.readAllBytes(Path.of(filepath));
 
-        return new FileModel(fileEntity.getOriginalFilename(), encryptionService.decrypt(encryptedFile));
+        return new FileModel(fileEntity.getOriginalFilename(), encryptionService.decrypt(encryptedFile, encryptionService.decryptKey(fileEntity.getEncryptionKey())));
     }
 
     @Override
@@ -88,8 +91,10 @@ public class FilesService implements FilesServiceInterface {
         Files.deleteIfExists(Path.of(userDirectory));
     }
 
-    private FileEntity saveFileInfoInDatabase(UUID accountId, String originalFilename) {
-        FileEntity fileEntity = new FileEntity(accountId, originalFilename);
+    private FileEntity saveFileInfoInDatabase(UUID accountId, String originalFilename) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+        String plainKey = getRandomString();
+        byte[] encryptionKey = encryptionService.encryptKey(plainKey.getBytes(StandardCharsets.UTF_8));
+        FileEntity fileEntity = new FileEntity(accountId, originalFilename, encryptionKey);
         return filesRepository.save(fileEntity);
     }
 
@@ -98,6 +103,10 @@ public class FilesService implements FilesServiceInterface {
         if (!Files.exists(Path.of(userDirectory))) {
             Files.createDirectory(Path.of(userDirectory));
         }
+    }
+
+    private String getRandomString() {
+        return RandomStringUtils.random(16, 0, 0, true, true, null, new SecureRandom());
     }
 
 }

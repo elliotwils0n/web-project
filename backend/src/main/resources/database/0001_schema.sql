@@ -17,7 +17,7 @@ create table refresh_tokens (
     account_id uuid not null,
     refresh_token varchar(400) not null,
     generated_at timestamp not null,
-    used boolean not null,
+    valid_to timestamp not null,
     constraint fk_account_refresh_tokens primary key (account_id),
     constraint fk_account_refresh_token_account_id foreign key (account_id) references accounts(id)
 );
@@ -27,5 +27,6 @@ create table files (
     account_id uuid not null,
     uploaded_at timestamp not null,
     original_filename varchar(400) not null,
+    encryption_key bytea not null,
     constraint fk_account_files_account_id foreign key (account_id) references accounts(id)
 );
