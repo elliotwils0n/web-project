@@ -4,6 +4,7 @@ import io.github.elliotwils0n.hosting.backend.dto.FileDto;
 import io.github.elliotwils0n.hosting.backend.model.FileModel;
 import io.github.elliotwils0n.hosting.backend.model.ServerMessage;
 import io.github.elliotwils0n.hosting.backend.service.implementation.FilesService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -32,13 +33,15 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/files")
+@Slf4j
 public class FilesController {
 
     @Autowired
     private FilesService filesService;
 
     @PostMapping("/upload")
-    public ResponseEntity<ServerMessage> uploadFile(Principal principal, @RequestAttribute("file") MultipartFile file) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+    public ResponseEntity<ServerMessage> uploadFile(Principal principal, @RequestParam("file") MultipartFile file) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+        log.info("File uploaded is null?: {}\nOriginal filename: {}", file == null, file.getOriginalFilename());
         filesService.saveFile(UUID.fromString(principal.getName()), file);
         return ResponseEntity.ok(new ServerMessage(HttpStatus.OK.value(), "File uploaded successfully"));
     }

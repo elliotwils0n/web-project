@@ -10,7 +10,7 @@ import { NotificationService } from "./notification.service";
 export class AuthorizationSerice implements CanActivate {
 
     private timerSubscription: Subscription | undefined;
-    private timer: Observable<Number> = timer(4.5 * 60 * 1000, 4.5 * 60 * 1000);
+    private timer: Observable<Number> = timer(5 * 60 * 1000, 5 * 60 * 1000);
 
     sessionActive: string = 'sessionActive';
     accessToken: string = 'accessToken';

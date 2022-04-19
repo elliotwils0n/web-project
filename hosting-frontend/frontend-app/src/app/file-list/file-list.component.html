@@ -1,7 +1,7 @@
 
 <div class="mb-2">
   <!-- Upload file modal trigger -->
-  <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadFileModal">Upload file</button>
+  <a class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#uploadFileModal">Upload file</a>
   <a class="btn btn-sm btn-outline-secondary" (click)="refreshFileList()">Refresh list</a>
 </div>
 
@@ -30,16 +30,18 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="staticBackdropLabel">Upload file</h5>
+        <h5 class="modal-title" id="staticBackdropLabel" >Upload file</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form>
         <div class="modal-body">
-          ...
+          <div class="mb-3">
+            <input class="form-control" type="file" id="formFile" required (change)="fileChange($event)" >
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">Understood</button>
+          <button type="submit" class="btn btn-primary" data-bs-dismiss="modal" (click)="uploadFile()">Upload</button>
         </div>
     </form>
     </div>

@@ -1,7 +1,5 @@
-<div class="position-relative">
-    <div class="position-absolute top-0 end-0 toast-container">
-        <div *ngFor="let toast of toastsStack">
-            <app-toast [title]="toast.title" [message]="toast.message" [date]="toast.date" (closeHit)="removeToast(toast)" ></app-toast>
-        </div>
+<div class="position-absolute bottom-0 end-0 toast-container">
+    <div *ngFor="let toast of toastsStack">
+        <app-toast [title]="toast.title" [message]="toast.message" [date]="toast.date" (closeHit)="removeToast(toast)" ></app-toast>
     </div>
 </div>
