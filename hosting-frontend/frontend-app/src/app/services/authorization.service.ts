@@ -10,7 +10,7 @@ import { NotificationService } from "./notification.service";
 export class AuthorizationSerice implements CanActivate {
 
     private timerSubscription: Subscription | undefined;
-    private timer: Observable<Number> = timer(5 * 60 * 1000, 5 * 60 * 1000);
+    private timer: Observable<Number> = timer(300000, 300000);
 
     sessionActive: string = 'sessionActive';
     accessToken: string = 'accessToken';
@@ -61,6 +61,7 @@ export class AuthorizationSerice implements CanActivate {
     }
 
     public refreshTokens() {
+        console.log('refreshing tokens...');
         const headers = {'Authorization': `Bearer ${localStorage.getItem(this.refreshToken)}`};
         this.httpClient
         .post<any>(`${this.baseUrl}/auth/refreshToken`, null, {'headers':headers})

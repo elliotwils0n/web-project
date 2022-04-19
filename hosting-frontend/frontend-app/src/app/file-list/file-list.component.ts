@@ -29,13 +29,7 @@ export class FileListComponent implements OnInit {
         this.files = data;
       },
       error: error => {
-        let errorMessage = 'Something went wrong.';
-        if(error.status == 403) {
-          this.authorizationService.clearStorage();
-          errorMessage = 'Session expired.';
-        } else {
-          errorMessage = error.error.message;
-        }
+        let errorMessage = error.error.message ? error.error.message : 'Something went wrong.';
         this.notificationService.pushNotification('Error', errorMessage);
       }
     });
@@ -48,13 +42,7 @@ export class FileListComponent implements OnInit {
         console.log('File downloaded successfully.');
       },
       error: error => {
-        let errorMessage = 'Something went wrong.';
-        if(error.status == 403) {
-          this.authorizationService.clearStorage();
-          errorMessage = 'Session expired.';
-        } else {
-          errorMessage = error.error.message;
-        }
+        let errorMessage = error.error.message ? error.error.message : 'Something went wrong.';
         this.notificationService.pushNotification('Error', errorMessage);
       }
     });
@@ -68,13 +56,7 @@ export class FileListComponent implements OnInit {
         this.notificationService.pushNotification('Success', 'File deleted successfully');
       },
       error: error => {
-        let errorMessage = 'Something went wrong.';
-        if(error.status == 403) {
-          this.authorizationService.clearStorage();
-          errorMessage = 'Session expired.';
-        } else {
-          errorMessage = error.error.message;
-        }
+        let errorMessage = error.error.message ? error.error.message : 'Something went wrong.';
         this.notificationService.pushNotification('Error', errorMessage);
       }
     });
@@ -93,14 +75,8 @@ export class FileListComponent implements OnInit {
             this.notificationService.pushNotification('Success', 'File uploaded Successfully.');
           },
           error: error => {
-            let errorMessage = 'Something went wrong while uploading a file.';
-            if(error.status == 403) {
-              this.authorizationService.clearStorage();
-              errorMessage = 'Session expired.';
-            } else {
-              errorMessage = error.error.message;
-            }
-            this.notificationService.pushNotification('Error', errorMessage);
+            let errorMessage = error.error.message ? error.error.message : 'Something went wrong.';
+        this.notificationService.pushNotification('Error', errorMessage);
         }
       });
     } else {

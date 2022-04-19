@@ -1,4 +1,6 @@
+
 export class Credentials {
+
     username: string;
     password: string;
     repeatPassword: string;
@@ -8,4 +10,5 @@ export class Credentials {
         this.password = password;
         this.repeatPassword = repeatPassword;
     }
+    
 }

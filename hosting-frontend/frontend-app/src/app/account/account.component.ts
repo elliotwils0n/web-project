@@ -29,13 +29,7 @@ export class AccountComponent implements OnInit {
                 this.router.navigateByUrl('/signin');
             },
             error: error => {
-              let errorMessage = 'Something went wrong. Account not deleted.';
-              if(error.status == 403) {
-                this.authorizationService.clearStorage();
-                errorMessage = 'Session expired.';
-              } else {
-                errorMessage = error.error.message;
-              }
+              let errorMessage = error.error.message ? error.error.message : 'Something went wrong.';
               this.notificationService.pushNotification('Error', errorMessage);
             }
         });

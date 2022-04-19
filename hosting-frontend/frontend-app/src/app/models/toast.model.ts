@@ -10,4 +10,5 @@ export class Toast {
         this.message = message;
         this.date = date;
     }
+    
 }

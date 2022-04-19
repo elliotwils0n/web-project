@@ -35,10 +35,4 @@ export class NotificationsComponent implements OnInit {
     this.toastsStack.pop();
   }
 
-  public clear() {
-    while(this.toastsStack.length > 0) {
-      this.toastsStack.pop();
-    }
-  }
-
 }

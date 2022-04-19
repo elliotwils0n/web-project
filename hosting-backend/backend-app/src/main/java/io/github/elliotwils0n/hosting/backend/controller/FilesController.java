@@ -41,7 +41,6 @@ public class FilesController {
 
     @PostMapping("/upload")
     public ResponseEntity<ServerMessage> uploadFile(Principal principal, @RequestParam("file") MultipartFile file) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
-        log.info("File uploaded is null?: {}\nOriginal filename: {}", file == null, file.getOriginalFilename());
         filesService.saveFile(UUID.fromString(principal.getName()), file);
         return ResponseEntity.ok(new ServerMessage(HttpStatus.OK.value(), "File uploaded successfully"));
     }

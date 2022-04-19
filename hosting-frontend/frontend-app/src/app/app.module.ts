@@ -9,7 +9,6 @@ import { SignupComponent } from './signup/signup.component';
 import { FileListComponent } from './file-list/file-list.component';
 import { AccountComponent } from './account/account.component';
 import { NavbarComponent } from './navbar/navbar.component';
-import { FileService } from './services/files.service';
 import { AuthorizationSerice } from './services/authorization.service';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
@@ -36,7 +35,7 @@ import { NotificationService } from './services/notification.service';
     FormsModule,
     HttpClientModule
   ],
-  providers: [AuthorizationSerice, FileService, NotificationService],
+  providers: [AuthorizationSerice, NotificationService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
