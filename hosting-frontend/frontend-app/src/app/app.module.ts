@@ -13,6 +13,9 @@ import { FileService } from './services/files.service';
 import { AuthorizationSerice } from './services/authorization.service';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
+import { NotificationsComponent } from './notifications/notifications.component';
+import { ToastComponent } from './toast/toast.component';
+import { NotificationService } from './services/notification.service';
 
 
 @NgModule({
@@ -22,7 +25,9 @@ import { HttpClientModule } from '@angular/common/http';
     SignupComponent,
     FileListComponent,
     AccountComponent,
-    NavbarComponent
+    NavbarComponent,
+    NotificationsComponent,
+    ToastComponent
     ],
   imports: [
     BrowserModule,
@@ -31,7 +36,7 @@ import { HttpClientModule } from '@angular/common/http';
     FormsModule,
     HttpClientModule
   ],
-  providers: [AuthorizationSerice, FileService],
+  providers: [AuthorizationSerice, FileService, NotificationService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

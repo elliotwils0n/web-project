@@ -1,0 +1,11 @@
+<div class="toast show m-3" style="z-index: 1000" role="alert" aria-live="assertive" aria-atomic="true" 
+data-bs-autohide='false' data-bs-delay="3000" data-bs-animation="true" >
+    <div class="toast-header">
+      <strong class="me-auto">{{title}}</strong>
+      <small>{{date | date:'dd/MM/yyyy hh:mm'}}</small>
+      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close" (click)="closeHit.emit(true)"></button>
+    </div>
+    <div class="toast-body">
+      {{message}}
+    </div>
+</div>

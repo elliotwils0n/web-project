@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { File } from '../models/file.model';
 import { AuthorizationSerice } from '../services/authorization.service';
+import { NotificationService } from '../services/notification.service';
 
 @Component({
   selector: 'app-file-list',
@@ -13,7 +14,7 @@ export class FileListComponent implements OnInit {
   baseUrl: string = 'http://localhost:8080/api';
   files: File[] = []
 
-  constructor(private httpClient: HttpClient, private authorizationService: AuthorizationSerice) { }
+  constructor(private httpClient: HttpClient, private authorizationService: AuthorizationSerice, private notificationService: NotificationService) { }
 
   ngOnInit(): void {
     this.refreshFileList();
@@ -26,7 +27,14 @@ export class FileListComponent implements OnInit {
         this.files = data;
       },
       error: error => {
-        this.authorizationService.refreshTokens();
+        let errorMessage = 'Something went wrong.';
+        if(error.status == 403) {
+          this.authorizationService.clearStorage();
+          errorMessage = 'Session expired.';
+        } else {
+          errorMessage = error.error.message;
+        }
+        this.notificationService.pushNotification('Error', errorMessage);
       }
     });
   }
@@ -38,7 +46,14 @@ export class FileListComponent implements OnInit {
         console.log('File downloaded successfully.');
       },
       error: error => {
-        this.authorizationService.refreshTokens();
+        let errorMessage = 'Something went wrong.';
+        if(error.status == 403) {
+          this.authorizationService.clearStorage();
+          errorMessage = 'Session expired.';
+        } else {
+          errorMessage = error.error.message;
+        }
+        this.notificationService.pushNotification('Error', errorMessage);
       }
     });
   }
@@ -50,7 +65,14 @@ export class FileListComponent implements OnInit {
         this.refreshFileList();
       },
       error: error => {
-        this.authorizationService.refreshTokens();
+        let errorMessage = 'Something went wrong.';
+        if(error.status == 403) {
+          this.authorizationService.clearStorage();
+          errorMessage = 'Session expired.';
+        } else {
+          errorMessage = error.error.message;
+        }
+        this.notificationService.pushNotification('Error', errorMessage);
       }
     });
   }

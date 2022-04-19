@@ -11,7 +11,7 @@ import { AuthorizationSerice } from '../services/authorization.service';
 })
 export class SigninComponent implements OnInit {
 
-  credentials: Credentials = new Credentials('', '');;
+  credentials: Credentials = new Credentials('', '', '');
 
   constructor(private router: Router, private authorizationSerivce: AuthorizationSerice) { }
 
@@ -19,7 +19,7 @@ export class SigninComponent implements OnInit {
     
   }
 
-  onSave(form: NgForm) {
+  public onSave(form: NgForm) {
     this.credentials.username = form.value.username;
     this.credentials.password = form.value.password;
 

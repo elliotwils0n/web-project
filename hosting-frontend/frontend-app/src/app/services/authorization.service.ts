@@ -1,19 +1,26 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, UrlTree } from "@angular/router";
-import { Observable } from "rxjs";
+import { timer, Observable, Subscription } from "rxjs";
 import { Credentials } from "../models/credentials.model";
+import { NotificationService } from "./notification.service";
 
 
 @Injectable()
 export class AuthorizationSerice implements CanActivate {
-    
-    baseUrl: string = 'http://localhost:8080/api';
+
+    private timerSubscription: Subscription | undefined;
+    private timer: Observable<Number> = timer(4.5 * 60 * 1000, 4.5 * 60 * 1000);
+
     sessionActive: string = 'sessionActive';
     accessToken: string = 'accessToken';
     refreshToken: string = 'refreshToken';
     
-    constructor(private httpClient: HttpClient, private router: Router){}
+    baseUrl: string = 'http://localhost:8080/api';
+
+    
+    constructor(private notificationService: NotificationService, private httpClient: HttpClient, private router: Router) {}
+
 
     public canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree | Observable<boolean | UrlTree> | Promise<boolean | UrlTree> {
         if(this.isSessionActive()) {
@@ -37,12 +44,17 @@ export class AuthorizationSerice implements CanActivate {
         .post<any>(`${this.baseUrl}/auth/generateToken`, {'username': credentials.username, 'password': credentials.password})
         .subscribe({
             next: data => {
-                localStorage.setItem(this.sessionActive, 'true');
                 localStorage.setItem(this.accessToken, data.accessToken);
                 localStorage.setItem(this.refreshToken, data.refreshToken);
+                localStorage.setItem(this.sessionActive, 'true');
                 this.router.navigateByUrl('/files');
+
+                this.timerSubscription = this.timer.subscribe(x => {
+                    this.refreshTokens();
+                });
             },
             error: error => {
+                this.notificationService.pushNotification('Error', 'Provided username and/or password invalid.');
                 console.log(error.error);
             }
         });
@@ -54,20 +66,24 @@ export class AuthorizationSerice implements CanActivate {
         .post<any>(`${this.baseUrl}/auth/refreshToken`, null, {'headers':headers})
         .subscribe({
             next: data => {
-                localStorage.setItem(this.sessionActive, 'true');
                 localStorage.setItem(this.accessToken, data.accessToken);
                 localStorage.setItem(this.refreshToken, data.refreshToken);
+                localStorage.setItem(this.sessionActive, 'true');
             },
             error: error => {
+                this.notificationService.pushNotification('Error', 'Error occurred while trying to refresh tokens.');
                 this.clearStorage();
             }
         });
     }
 
     public clearStorage() {
-        localStorage.removeItem(this.sessionActive);
+        if(this.timerSubscription) {
+            this.timerSubscription.unsubscribe();
+        }
         localStorage.removeItem(this.accessToken);
         localStorage.removeItem(this.refreshToken);
+        localStorage.removeItem(this.sessionActive);
         this.router.navigateByUrl('/signin');
     }
 
