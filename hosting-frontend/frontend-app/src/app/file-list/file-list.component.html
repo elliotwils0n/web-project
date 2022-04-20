@@ -17,7 +17,7 @@
     <tbody>
       <tr *ngFor="let file of files">
         <th scope="row">{{file.fileId}}</th>
-        <td><a class="btn btn-sm" (click)="downloadFile(file.fileId)">{{file.originalFilename}}</a></td>
+        <td><a class="btn btn-sm" (click)="downloadFile(file.fileId, file.originalFilename)">{{file.originalFilename}}</a></td>
         <td>{{file.uploadedAt}}</td>
         <td><a class="btn btn-sm" (click)="deleteFile(file.fileId)"><a class="btn btn-sm btn-outline-danger">x</a></a></td>
       </tr>
