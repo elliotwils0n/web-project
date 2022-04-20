@@ -15,6 +15,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { NotificationsComponent } from './notifications/notifications.component';
 import { ToastComponent } from './toast/toast.component';
 import { NotificationService } from './services/notification.service';
+import { NgxPaginationModule } from 'ngx-pagination';
+import { ApiCallerService } from './services/api-caller.service';
 
 
 @NgModule({
@@ -33,9 +35,10 @@ import { NotificationService } from './services/notification.service';
     AppRoutingModule,
     NgbModule,
     FormsModule,
-    HttpClientModule
+    HttpClientModule,
+    NgxPaginationModule
   ],
-  providers: [AuthorizationSerice, NotificationService],
+  providers: [AuthorizationSerice, NotificationService, ApiCallerService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -1,7 +1,7 @@
 <div class="containter text-center">
     <h1 class="mb-5">Sign up</h1>
 
-    <form class="col-4 m-auto" #signUpForm="ngForm" (submit)="onSave(signUpForm)">
+    <form class="col-12 col-md-8 col-lg-6 m-auto" #signUpForm="ngForm" (submit)="onSave(signUpForm)">
 
       <div class="form-outline mb-4">
         <input type="text" class="form-control" placeholder="username" #username  name="username" [ngModel]="credentials?.username" required minlength="6" maxlength="30" />

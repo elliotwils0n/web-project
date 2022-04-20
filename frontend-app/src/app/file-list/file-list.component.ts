@@ -1,10 +1,8 @@
-import { HttpClient } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FileInfo } from '../models/file-info.model';
-import { AuthorizationSerice } from '../services/authorization.service';
 import { NotificationService } from '../services/notification.service';
 import { saveAs } from 'file-saver';
-import { Observable } from 'rxjs';
+import { ApiCallerService } from '../services/api-caller.service';
 
 
 @Component({
@@ -13,33 +11,38 @@ import { Observable } from 'rxjs';
   styleUrls: ['./file-list.component.css']
 })
 export class FileListComponent implements OnInit {
-
+  
+  @ViewChild('inputFile') inputFile: ElementRef | undefined;
+  
   baseUrl: string = 'http://localhost:8080/api';
+  page = 1;
   files: FileInfo[] = []
-  file: File | null = null;
 
-  constructor(private httpClient: HttpClient, private authorizationService: AuthorizationSerice, private notificationService: NotificationService) { }
+  file: File | undefined;
+  InputVar: ElementRef | null = null;
+
+  constructor(private apiCallerSerivce: ApiCallerService, private notificationService: NotificationService) { }
 
   ngOnInit(): void {
+    this.page = 1;
     this.refreshFileList();
   }
 
   public refreshFileList() {
-    const headers = {'Authorization': this.authorizationService.getAccessToken()};
-    this.httpClient.get<any>(`${this.baseUrl}/files/list`, {headers: headers}).subscribe({
+    this.apiCallerSerivce.get('/files/list').subscribe({
       next: data => {
         this.files = data;
       },
       error: error => {
         let errorMessage = error.error.message ? error.error.message : 'Something went wrong.';
         this.notificationService.pushNotification('Error', errorMessage);
+        localStorage.clear();
       }
     });
   }
 
   public downloadFile(id: number, filename: string) {
-    const headers = {'Authorization': this.authorizationService.getAccessToken()};
-    this.httpClient.get(`${this.baseUrl}/files/download/${id}`, {headers: headers, responseType: 'blob'}).subscribe({
+    this.apiCallerSerivce.getBlob(`/files/download/${id}`).subscribe({
       next: data => {
         saveAs(new Blob([data]), filename);
         this.notificationService.pushNotification('Success', 'File downloaded successfully.');
@@ -52,8 +55,7 @@ export class FileListComponent implements OnInit {
   }
 
   public deleteFile(id: number) {
-    const headers = {'Authorization': this.authorizationService.getAccessToken()};
-    this.httpClient.delete<any>(`${this.baseUrl}/files/delete/${id}`, {headers: headers}).subscribe({
+    this.apiCallerSerivce.delete(`/files/delete/${id}`).subscribe({
       next: data => {
         this.refreshFileList();
         this.notificationService.pushNotification('Success', 'File deleted successfully');
@@ -66,13 +68,12 @@ export class FileListComponent implements OnInit {
   }
 
   public uploadFile() {
+   
     if(this.file) {
-        const headers = {'Authorization': this.authorizationService.getAccessToken()};
-
         let formData = new FormData();
         formData.append('file', this.file);
 
-        this.httpClient.post<any>(`${this.baseUrl}/files/upload`, formData, {headers: headers}).subscribe({
+        this.apiCallerSerivce.post('/files/upload', formData).subscribe({
           next: data => {
             this.refreshFileList();
             this.notificationService.pushNotification('Success', 'File uploaded Successfully.');
@@ -85,13 +86,20 @@ export class FileListComponent implements OnInit {
     } else {
       this.notificationService.pushNotification('Error', 'No file selected.');
     }
-    this.file = null;
+    this.file = undefined;
+    this.clearInput();
   }
 
   public fileChange(event: Event) {
     const files = (event.target as HTMLInputElement).files;
     if(files != null && files.length > 0) {
       this.file = files[0];
+    }
+  }
+
+  public clearInput() {
+    if(this.inputFile){
+      this.inputFile.nativeElement.value = null;
     }
   }
 

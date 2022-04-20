@@ -73,18 +73,16 @@ export class AuthorizationSerice implements CanActivate {
             },
             error: error => {
                 this.notificationService.pushNotification('Error', 'Error occurred while trying to refresh tokens.');
-                this.clearStorage();
+                this.logOut();
             }
         });
     }
 
-    public clearStorage() {
+    public logOut() {
         if(this.timerSubscription) {
             this.timerSubscription.unsubscribe();
         }
-        localStorage.removeItem(this.accessToken);
-        localStorage.removeItem(this.refreshToken);
-        localStorage.removeItem(this.sessionActive);
+        localStorage.clear();
         this.router.navigateByUrl('/signin');
     }
 

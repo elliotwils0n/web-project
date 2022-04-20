@@ -14,8 +14,7 @@ export class NavbarComponent implements OnInit {
   }
 
   public onLogout() {
-    console.log('logout clicked')
-    this.authorizationSerivce.clearStorage();
+    this.authorizationSerivce.logOut();
   }
 
   public showLogout() {
