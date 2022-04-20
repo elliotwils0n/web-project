@@ -70,6 +70,7 @@ public class FilesServiceTest {
     @AfterEach
     public void clean() throws IOException {
         Files.deleteIfExists(Path.of(String.format("%s/%s/%s.enc", rootDirectory, ACCOUNT_ID, fileEntity.getId())));
+        Files.deleteIfExists(Path.of(String.format("%s/%s", rootDirectory, ACCOUNT_ID)));
     }
 
     @Test
