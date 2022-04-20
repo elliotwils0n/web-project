@@ -76,7 +76,7 @@ public class FilesService implements FilesServiceInterface {
 
     @Override
     public List<FileDto> getAllAccountFiles(UUID accountId) {
-        return filesRepository.findAllByAccountId(accountId).stream()
+        return filesRepository.findAllByAccountIdOrderByUploadedAtDesc(accountId).stream()
                 .map(file -> new FileDto(file.getId(), file.getUploadedAt(), file.getOriginalFilename()))
                 .collect(Collectors.toList());
     }

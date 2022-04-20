@@ -13,5 +13,5 @@ public interface FilesRepository extends JpaRepository<FileEntity, Long> {
 
     Optional<FileEntity> findByIdAndAccountId(Long id, UUID accountId);
 
-    List<FileEntity> findAllByAccountId(UUID accountId);
+    List<FileEntity> findAllByAccountIdOrderByUploadedAtDesc(UUID accountId);
 }
