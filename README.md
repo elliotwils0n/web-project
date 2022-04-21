@@ -10,7 +10,7 @@
 Application created for university classes about web applications.
 It's a simple application, file hosting or cloud drive wannabe.
 
-Authorization via JWT tokens. Files encrypted with RSA algorithm.
+Authorization via JWT tokens. Files encrypted with AES algorithm.
 
 Uploaded files will appear in "storage" catalog.
 Every user has it's own catalog named by their UUID assigned to them after registration.
