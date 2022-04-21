@@ -1,0 +1,5 @@
+.git/
+frontend-app/node_modules/
+logs/
+storage/*
+!*.gitkeep

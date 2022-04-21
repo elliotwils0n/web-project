@@ -1,0 +1,31 @@
+<div class="containter text-center">
+    <h1 class="mb-5">Sign up</h1>
+
+    <form class="col-12 col-md-8 col-lg-6 m-auto" #signUpForm="ngForm" (submit)="onSave(signUpForm)">
+
+      <div class="form-outline mb-4">
+        <input type="text" class="form-control" placeholder="username" #username  name="username" [ngModel]="credentials?.username" required minlength="6" maxlength="30" />
+        <div class="form-text" *ngIf="username.value.length < 6">Your password must be 6-30 characters long.</div>
+      </div>
+    
+      <div class="form-outline mb-4">
+        <input type="password" class="form-control" placeholder="password" #password name="password" [ngModel]="credentials?.password" required minlength="6" maxlength="30" />
+        <div class="form-text" *ngIf="password.value.length < 6">Your password must be 6-30 characters long.</div>
+      </div>
+
+      <div class="form-outline mb-4">
+        <input type="password" class="form-control" placeholder="repeat password" #repeatPassword name="repeatPassword" [ngModel]="credentials?.repeatPassword" required minlength="6" maxlength="30" />
+        <div class="form-text" *ngIf="repeatPassword.value.length < 6">Your password must be 6-30 characters long.</div>
+        <div class="form-text" *ngIf="repeatPassword.value != password.value">Passwords do not match.</div>
+      </div>
+      
+        <button type="submit" class="btn btn-primary btn-block mb-4" [disabled]="!signUpForm.valid || repeatPassword.value != password.value">Sign up</button>
+      </form>
+
+      <div>
+        <p>Already have an account? <a routerLink="/signin" routerLinkActive="active">Sign in</a>.</p>
+      </div>
+</div>
+
+
+
