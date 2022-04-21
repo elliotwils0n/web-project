@@ -25,7 +25,7 @@ For simplicity, in this project, master key is saved in application.properties f
 
 ## Startup instructions
 
-* Start Postgres in Docker, run command in backend-app/docker-compose
+* Start Postgres in Docker, run command in backend-app/docker-compose catalog:
 
    ```sudo docker-compose up```
 
