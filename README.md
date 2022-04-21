@@ -20,7 +20,7 @@ For simplicity, in this project, master key is saved in application.properties f
 
 ## Requirements
 * Docker & Docker Compose or Postgres database
-* Maven
+* Java 11, Maven
 * Angular, ng
 
 ## Startup instructions
