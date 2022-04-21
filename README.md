@@ -30,7 +30,7 @@ For simplicity, in this project, master key is saved in application.properties f
    ```sudo docker-compose up```
 
 
-* Init database structure, build the app and run it. Execute these commands in backend-app catalog:
+* Clear database init structure from scripts, build the app and run it. Execute these commands in backend-app catalog:
 
     ```mvn resources:resources liquibase:dropAll -P local```
 
