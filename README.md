@@ -19,14 +19,14 @@ The key is saved in the database encrypted with master key which is known by the
 For simplicity, in this project, master key is saved in application.properties file.
 
 ## Requirements
-* Docker & Docker Compose or postgres database
+* Docker & Docker Compose or Postgres database
 * Maven
 * Angular, ng
 
 ## Startup instructions
 
-* Start postgres in docker, run command in backend-app/docker-compose
-  
+* Start Postgres in Docker, run command in backend-app/docker-compose
+
    ```sudo docker-compose up```
 
 
