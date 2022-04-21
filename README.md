@@ -43,7 +43,9 @@ For simplicity, in this project, master key is saved in application.properties f
 
 * Start angular application in frontend-app catalog:
 
-    ```ng serve```
+   ```npm install```
+
+   ```ng serve```
 
 
 * Application will be available at [localhost:4200](http://localhost:4200).
