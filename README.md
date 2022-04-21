@@ -13,7 +13,7 @@ It's a simple application, file hosting or cloud drive wannabe.
 Authorization via JWT tokens. Files encrypted with RSA algorithm.
 
 Uploaded files will appear in "storage" catalog.
-Every user has it's own catalog named by their UUID assigned while to them after registration.
+Every user has it's own catalog named by their UUID assigned to them after registration.
 Every file is encrypted with different random key. 
 The key is saved in the database encrypted with master key which is known by the backend application.
 For simplicity, in this project, master key is saved in application.properties file.
