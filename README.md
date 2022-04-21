@@ -3,7 +3,7 @@
 ## Table of contents
 * [General info](#general-info)
 * [Requirements](#requirements)
-* [Startup instructions](#startup instructions)
+* [Startup instructions](#startup_instructions)
 * [Links](#links)
 
 ## General info
@@ -25,7 +25,7 @@ For simplicity, in this project, master key is saved in application.properties f
 
 ## Startup instructions
 
-####In backend-app/docker-compose
+#### In backend-app/docker-compose
 * Start postgres in docker, run command in backend-app/docker-compose
   
    ```sudo docker-compose up```
