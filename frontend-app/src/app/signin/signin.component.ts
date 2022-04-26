@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { Router } from '@angular/router';
 import { Credentials } from '../models/credentials.model';
 import { AuthorizationSerice } from '../services/authorization.service';
 
@@ -13,7 +12,7 @@ export class SigninComponent implements OnInit {
 
   credentials: Credentials = new Credentials('', '', '');
 
-  constructor(private router: Router, private authorizationSerivce: AuthorizationSerice) { }
+  constructor(private authorizationSerivce: AuthorizationSerice) { }
 
   ngOnInit(): void {
     

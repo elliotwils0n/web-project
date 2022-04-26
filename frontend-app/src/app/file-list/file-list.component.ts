@@ -13,12 +13,10 @@ import { ApiCallerService } from '../services/api-caller.service';
 export class FileListComponent implements OnInit {
   
   @ViewChild('inputFile') inputFile: ElementRef | undefined;
-  
-  baseUrl: string = 'http://localhost:8080/api';
+
   page = 1;
   files: FileInfo[] = []
-
-  file: File | undefined;
+  file: File | null = null;
   InputVar: ElementRef | null = null;
 
   constructor(private apiCallerSerivce: ApiCallerService, private notificationService: NotificationService) { }
@@ -34,7 +32,7 @@ export class FileListComponent implements OnInit {
         this.files = data;
       },
       error: error => {
-        let errorMessage = error.error.message ? error.error.message : 'Something went wrong.';
+        const errorMessage = error.error.message ? error.error.message : 'Something went wrong.';
         this.notificationService.pushNotification('Error', errorMessage);
         localStorage.clear();
       }
@@ -48,7 +46,7 @@ export class FileListComponent implements OnInit {
         this.notificationService.pushNotification('Success', 'File downloaded successfully.');
       },
       error: error => {
-        let errorMessage = error.error.message ? error.error.message : 'Something went wrong.';
+        const errorMessage = error.error.message ? error.error.message : 'Something went wrong.';
         this.notificationService.pushNotification('Error', errorMessage);
       }
     });
@@ -61,7 +59,7 @@ export class FileListComponent implements OnInit {
         this.notificationService.pushNotification('Success', 'File deleted successfully');
       },
       error: error => {
-        let errorMessage = error.error.message ? error.error.message : 'Something went wrong.';
+        const errorMessage = error.error.message ? error.error.message : 'Something went wrong.';
         this.notificationService.pushNotification('Error', errorMessage);
       }
     });
@@ -70,7 +68,7 @@ export class FileListComponent implements OnInit {
   public uploadFile() {
    
     if(this.file) {
-        let formData = new FormData();
+        const formData = new FormData();
         formData.append('file', this.file);
 
         this.apiCallerSerivce.post('/files/upload', formData).subscribe({
@@ -79,14 +77,14 @@ export class FileListComponent implements OnInit {
             this.notificationService.pushNotification('Success', 'File uploaded Successfully.');
           },
           error: error => {
-            let errorMessage = error.error.message ? error.error.message : 'Something went wrong.';
+            const errorMessage = error.error.message ? error.error.message : 'Something went wrong.';
         this.notificationService.pushNotification('Error', errorMessage);
         }
       });
     } else {
       this.notificationService.pushNotification('Error', 'No file selected.');
     }
-    this.file = undefined;
+    this.file = null;
     this.clearInput();
   }
 

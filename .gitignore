@@ -3,3 +3,47 @@ frontend-app/node_modules/
 logs/
 storage/*
 !*.gitkeep
+
+
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+
+# Compiled output
+frontend-app/dist
+frontend-app/tmp
+frontend-app/out-tsc
+frontend-app/bazel-out
+
+# Node
+frontend-app/node_modules
+frontend-app/npm-debug.log
+frontend-app/yarn-error.log
+
+# IDEs and editors
+frontend-app/.idea/
+frontend-app/.project
+frontend-app/.classpath
+frontend-app/.c9/
+frontend-app/*.launch
+frontend-app/.settings/
+frontend-app/*.sublime-workspace
+
+# Visual Studio Code
+frontend-app/.vscode/*
+frontend-app/!.vscode/settings.json
+frontend-app/!.vscode/tasks.json
+frontend-app/!.vscode/launch.json
+frontend-app/!.vscode/extensions.json
+frontend-app/.history/*
+
+# Miscellaneous
+frontend-app/.angular/cache
+frontend-app/.sass-cache/
+frontend-app/connect.lock
+frontend-app/coverage
+frontend-app/libpeerconnection.log
+frontend-app/testem.log
+frontend-app/typings
+
+# System files
+frontend-app/.DS_Store
+frontend-app/Thumbs.db

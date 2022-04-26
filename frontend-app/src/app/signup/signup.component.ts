@@ -30,7 +30,8 @@ export class SignupComponent implements OnInit {
                 this.router.navigateByUrl('/signin');
             },
             error: error => {
-              this.notificationService.pushNotification('Error', 'Something went wrong. Account not created.');
+              const errorMessage = error.error.message ? error.error.message : 'Something went wrong. Account not created.';
+              this.notificationService.pushNotification('Error', errorMessage);
             }
         });
   }

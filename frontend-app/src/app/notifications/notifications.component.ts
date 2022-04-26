@@ -30,7 +30,7 @@ export class NotificationsComponent implements OnInit {
   }
 
   public removeToast(toast: Toast) {
-    let toastIdx = this.toastsStack.lastIndexOf(toast);
+    const toastIdx = this.toastsStack.lastIndexOf(toast);
     this.toastsStack[toastIdx] = this.toastsStack[this.toastsStack.length - 1]
     this.toastsStack.pop();
   }

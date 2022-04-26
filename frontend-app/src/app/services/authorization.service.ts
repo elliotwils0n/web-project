@@ -54,7 +54,8 @@ export class AuthorizationSerice implements CanActivate {
                 });
             },
             error: error => {
-                this.notificationService.pushNotification('Error', 'Provided username and/or password invalid.');
+                const errorMessage = error.error.message ? error.error.message : 'Provided username and/or password invalid.';
+                this.notificationService.pushNotification('Error', errorMessage);
                 console.log(error.error);
             }
         });
@@ -72,7 +73,8 @@ export class AuthorizationSerice implements CanActivate {
                 localStorage.setItem(this.sessionActive, 'true');
             },
             error: error => {
-                this.notificationService.pushNotification('Error', 'Error occurred while trying to refresh tokens.');
+                const errorMessage = error.error.message ? error.error.message : 'Error occurred while trying to refresh tokens.';
+                this.notificationService.pushNotification('Error', errorMessage);
                 this.logOut();
             }
         });
