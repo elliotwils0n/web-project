@@ -1,0 +1,68 @@
+version: '3'
+
+services:
+
+  web-project-db:
+    container_name: web-project-db
+    image: postgres
+    expose:
+      - 5432
+    ports:
+      - 5432:5432
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    volumes:
+      - web-project-db-volume:/var/lib/postgresql/data
+    networks:
+      web-project-back-net:
+        aliases:
+          - postgres
+
+  web-project-backend:
+    depends_on: 
+      - web-project-db
+    container_name: web-project-backend
+    image: maven:3.8.6-jdk-11-slim
+    expose: 
+      - 8080
+    ports:
+      - 8080:8080
+    restart: always
+    working_dir: /root/app
+    command: sh -c "mvn resources:resources liquibase:update -P docker && mvn clean package -DskipTests -P docker && mvn spring-boot:run -P docker"
+    volumes:
+      - ./backend-app:/root/app
+      - ./storage:/root/storage
+      - web-project-mvn-repo:/root/.m2
+    networks:
+      web-project-back-net: {}
+      web-project-front-net:
+        aliases:
+          - backend
+
+  web-project-frontend:
+    depends_on: 
+      - web-project-backend
+    container_name: web-project-frontend
+    image: node:18-slim
+    ports:
+      - 4200:4200
+    restart: always
+    working_dir: /root/app
+    command: sh -c "npm install && npm install -g @angular/cli@8.1.2 && ng serve --open --host 0.0.0.0 --port 4200 --disable-host-check"
+    volumes:
+      - ./frontend-app:/root/app
+    networks:
+      - web-project-front-net
+
+volumes:
+  web-project-db-volume: {}
+  web-project-mvn-repo: {}
+
+networks:
+  web-project-back-net: {}
+  web-project-front-net: {}
+  

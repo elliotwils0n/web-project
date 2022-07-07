@@ -129,6 +129,7 @@
 				<configuration>
 					<propertyFile>liquibase.properties</propertyFile>
 					<changeLogFile>src/main/resources/liquibase-changeLog.xml</changeLogFile>
+					<promptOnNonLocalDatabase>false</promptOnNonLocalDatabase>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -150,6 +151,14 @@
 			<build>
 				<filters>
 					<filter>profiles/local.properties</filter>
+				</filters>
+			</build>
+		</profile>
+		<profile>
+			<id>docker</id>
+			<build>
+				<filters>
+					<filter>profiles/docker.properties</filter>
 				</filters>
 			</build>
 		</profile>
