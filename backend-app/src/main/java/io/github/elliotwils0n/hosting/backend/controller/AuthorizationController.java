@@ -22,14 +22,14 @@ public class AuthorizationController {
 
     @PostMapping("/generateToken")
     public ResponseEntity<TokenPair> generateToken(@RequestBody Credentials credentials) {
-        TokenPair tokenPair = authorizationService.generateToken(credentials);
+        TokenPair tokenPair = authorizationService.generateTokenPair(credentials);
 
         return ResponseEntity.ok(tokenPair);
     }
 
     @PostMapping("/refreshToken")
     public ResponseEntity<TokenPair> refreshToken(@RequestHeader(HttpHeaders.AUTHORIZATION) String refreshToken) {
-        TokenPair tokenPair = authorizationService.refreshToken(refreshToken.replace("Bearer ", ""));
+        TokenPair tokenPair = authorizationService.refreshTokens(refreshToken.replace("Bearer ", ""));
 
         return ResponseEntity.ok(tokenPair);
     }

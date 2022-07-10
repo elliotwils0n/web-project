@@ -1,6 +1,7 @@
 package io.github.elliotwils0n.hosting.backend.config;
 
 import io.github.elliotwils0n.hosting.backend.model.Role;
+import io.github.elliotwils0n.hosting.backend.model.ServerMessage;
 import io.github.elliotwils0n.hosting.backend.service.implementation.AuthorizationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -34,22 +35,28 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
         if (authHeader.isPresent() && authHeader.get().startsWith("Bearer ")) {
             String token = authHeader.get().replace("Bearer ", "");
-
-            boolean validToken = false;
-            Optional<UUID> accountId = Optional.empty();
+            Optional<UUID> accountId;
 
             try {
-                validToken = authorizationService.isAccessTokenValid(token);
+                authorizationService.validateAccessToken(token);
                 accountId = authorizationService.getAccountIdFromAccessToken(token);
             } catch (Exception e) {
-                response.setStatus(HttpStatus.FORBIDDEN.value());
+                log.info("Validation error: {}", e.getMessage());
+                setResponseBody(response, e.getMessage());
+                return;
             }
-            if (validToken && accountId.isPresent()) {
-                UsernamePasswordAuthenticationToken authenticationToken =
-                        new UsernamePasswordAuthenticationToken(accountId.get(), null, Collections.singleton(new SimpleGrantedAuthority(Role.AUTHORIZED.getName())));
+            if (accountId.isPresent()) {
+                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(accountId.get(), null, Collections.singleton(new SimpleGrantedAuthority(Role.AUTHORIZED.getName())));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
         }
         filterChain.doFilter(request, response);
+    }
+
+    private void setResponseBody(HttpServletResponse response, String message) throws IOException {
+        ServerMessage serverMessage = new ServerMessage(HttpStatus.UNAUTHORIZED.value(), message);
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.getWriter().write(serverMessage.toString());
+        response.getWriter().flush();
     }
 }

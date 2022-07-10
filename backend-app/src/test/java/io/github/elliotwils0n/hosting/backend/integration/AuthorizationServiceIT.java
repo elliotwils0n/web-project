@@ -1,23 +1,19 @@
 package io.github.elliotwils0n.hosting.backend.integration;
 
 import io.github.elliotwils0n.hosting.backend.dto.AccountDto;
-import io.github.elliotwils0n.hosting.backend.entity.AccessTokenEntity;
-import io.github.elliotwils0n.hosting.backend.entity.RefreshTokenEntity;
+import io.github.elliotwils0n.hosting.backend.entity.SessionEntity;
 import io.github.elliotwils0n.hosting.backend.model.Credentials;
 import io.github.elliotwils0n.hosting.backend.model.TokenPair;
-import io.github.elliotwils0n.hosting.backend.repository.AccessTokensRepository;
-import io.github.elliotwils0n.hosting.backend.repository.RefreshTokensRepository;
+import io.github.elliotwils0n.hosting.backend.repository.SessionsRepository;
 import io.github.elliotwils0n.hosting.backend.service.AccountsServiceInterface;
 import io.github.elliotwils0n.hosting.backend.service.AuthorizationServiceInterface;
 import io.github.elliotwils0n.hosting.backend.service.implementation.AccountsService;
 import io.github.elliotwils0n.hosting.backend.service.implementation.AuthorizationService;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Profile;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -32,10 +28,7 @@ public class AuthorizationServiceIT {
     private AuthorizationService authorizationService;
 
     @Autowired
-    private AccessTokensRepository accessTokensRepository;
-
-    @Autowired
-    private RefreshTokensRepository refreshTokensRepository;
+    private SessionsRepository sessionsRepository;
 
     @Autowired
     private AccountsService accountsService;
@@ -54,19 +47,15 @@ public class AuthorizationServiceIT {
         AccountDto account = accountsService.createAccount(credentials);
 
         // when
-        TokenPair tokenPair = authorizationService.generateToken(credentials);
+        TokenPair tokenPair = authorizationService.generateTokenPair(credentials);
+        Optional<SessionEntity> sessionEntity = sessionsRepository.findFirstByAccountIdAndActiveOrderByModificationTimeDesc(account.getId(), true);
 
         // then
         Assertions.assertNotNull(tokenPair.getAccessToken());
         Assertions.assertNotNull(tokenPair.getRefreshToken());
-
-        Optional<AccessTokenEntity> accessToken = accessTokensRepository.findByAccountId(account.getId());
-        Optional<RefreshTokenEntity> refreshToken = refreshTokensRepository.findByAccountId(account.getId());
-
-        Assertions.assertTrue(accessToken.isPresent());
-        Assertions.assertEquals(tokenPair.getAccessToken(), accessToken.get().getAccessToken());
-        Assertions.assertTrue(refreshToken.isPresent());
-        Assertions.assertEquals(tokenPair.getRefreshToken(), refreshToken.get().getRefreshToken());
+        Assertions.assertTrue(sessionEntity.isPresent());
+        Assertions.assertEquals(tokenPair.getAccessToken(), sessionEntity.get().getAccessToken());
+        Assertions.assertEquals(tokenPair.getRefreshToken(), sessionEntity.get().getRefreshToken());
     }
 
     @Test
@@ -81,7 +70,7 @@ public class AuthorizationServiceIT {
 
         // when
         // then
-        Assertions.assertThrows(AuthorizationServiceInterface.InvalidCredentialsException.class, () -> authorizationService.generateToken(invalidCredentials));
+        Assertions.assertThrows(AuthorizationServiceInterface.InvalidCredentialsException.class, () -> authorizationService.generateTokenPair(invalidCredentials));
     }
 
     @Test
@@ -93,7 +82,7 @@ public class AuthorizationServiceIT {
 
         // when
         // then
-        Assertions.assertThrows(AccountsServiceInterface.AccountDoesNotExist.class, () -> authorizationService.generateToken(credentials));
+        Assertions.assertThrows(AccountsServiceInterface.AccountDoesNotExist.class, () -> authorizationService.generateTokenPair(credentials));
     }
 
     @Test
@@ -104,22 +93,18 @@ public class AuthorizationServiceIT {
         Credentials credentials = new Credentials("john_doe", "raw_password");
 
         AccountDto account = accountsService.createAccount(credentials);
-        TokenPair tokenPair = authorizationService.generateToken(credentials);
+        TokenPair tokenPair = authorizationService.generateTokenPair(credentials);
 
         // when
-        TokenPair refreshedTokenPair = authorizationService.refreshToken(tokenPair.getRefreshToken());
+        TokenPair refreshedTokenPair = authorizationService.refreshTokens(tokenPair.getRefreshToken());
+        Optional<SessionEntity> sessionEntity = sessionsRepository.findFirstByAccountIdAndActiveOrderByModificationTimeDesc(account.getId(), true);
 
         // then
         Assertions.assertNotNull(refreshedTokenPair.getAccessToken());
         Assertions.assertNotNull(refreshedTokenPair.getRefreshToken());
-
-        Optional<AccessTokenEntity> accessToken = accessTokensRepository.findByAccountId(account.getId());
-        Optional<RefreshTokenEntity> refreshToken = refreshTokensRepository.findByAccountId(account.getId());
-
-        Assertions.assertTrue(accessToken.isPresent());
-        Assertions.assertEquals(refreshedTokenPair.getAccessToken(), accessToken.get().getAccessToken());
-        Assertions.assertTrue(refreshToken.isPresent());
-        Assertions.assertEquals(refreshedTokenPair.getRefreshToken(), refreshToken.get().getRefreshToken());
+        Assertions.assertTrue(sessionEntity.isPresent());
+        Assertions.assertEquals(refreshedTokenPair.getAccessToken(), sessionEntity.get().getAccessToken());
+        Assertions.assertEquals(refreshedTokenPair.getRefreshToken(), sessionEntity.get().getRefreshToken());
     }
 
     @Test
@@ -130,11 +115,11 @@ public class AuthorizationServiceIT {
         Credentials credentials = new Credentials("john_doe", "raw_password");
 
         accountsService.createAccount(credentials);
-        TokenPair tokenPair = authorizationService.generateToken(credentials);
+        TokenPair tokenPair = authorizationService.generateTokenPair(credentials);
 
         // when
         // then
-        Assertions.assertThrows(AuthorizationServiceInterface.InvalidRefreshedTokenProvided.class,() -> authorizationService.refreshToken(tokenPair.getAccessToken()));
+        Assertions.assertThrows(AuthorizationServiceInterface.SessionExpiredException.class,() -> authorizationService.refreshTokens(tokenPair.getAccessToken()));
     }
 
     @Test
@@ -145,13 +130,13 @@ public class AuthorizationServiceIT {
         Credentials credentials = new Credentials("john_doe", "raw_password");
 
         accountsService.createAccount(credentials);
-        TokenPair tokenPair = authorizationService.generateToken(credentials);
+        TokenPair tokenPair = authorizationService.generateTokenPair(credentials);
 
-        refreshTokensRepository.deleteAllInBatch();
+        sessionsRepository.deleteAllInBatch();
 
         // when
         // then
-        Assertions.assertThrows(AuthorizationServiceInterface.InvalidRefreshedTokenProvided.class,() -> authorizationService.refreshToken(tokenPair.getAccessToken()));
+        Assertions.assertThrows(AuthorizationServiceInterface.SessionNotFoundException.class,() -> authorizationService.refreshTokens(tokenPair.getAccessToken()));
     }
 
     @Test
@@ -162,13 +147,11 @@ public class AuthorizationServiceIT {
         Credentials credentials = new Credentials("john_doe", "raw_password");
 
         accountsService.createAccount(credentials);
-        TokenPair tokenPair = authorizationService.generateToken(credentials);
+        TokenPair tokenPair = authorizationService.generateTokenPair(credentials);
 
         // when
-        boolean validation = authorizationService.isAccessTokenValid(tokenPair.getAccessToken());
-
         // then
-        Assertions.assertTrue(validation);
+        Assertions.assertDoesNotThrow(() -> authorizationService.validateAccessToken(tokenPair.getAccessToken()));
     }
 
     @Test
@@ -179,13 +162,11 @@ public class AuthorizationServiceIT {
         Credentials credentials = new Credentials("john_doe", "raw_password");
 
         accountsService.createAccount(credentials);
-        TokenPair tokenPair = authorizationService.generateToken(credentials);
+        TokenPair tokenPair = authorizationService.generateTokenPair(credentials);
 
         // when
-        boolean validation = authorizationService.isAccessTokenValid(tokenPair.getRefreshToken());
-
         // then
-        Assertions.assertFalse(validation);
+        Assertions.assertThrows(AuthorizationServiceInterface.SessionExpiredException.class, () -> authorizationService.validateAccessToken(tokenPair.getRefreshToken()));
     }
 
 }

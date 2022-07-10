@@ -2,8 +2,8 @@ version: '3'
 
 services:
 
-  web-project-db:
-    container_name: web-project-db
+  elliotwils0n-web-project-db:
+    container_name: elliotwils0n-web-project-db
     image: postgres
     expose:
       - 5432
@@ -15,16 +15,16 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=postgres
     volumes:
-      - web-project-db-volume:/var/lib/postgresql/data
+      - elliotwils0n-web-project-db-volume:/var/lib/postgresql/data
     networks:
-      web-project-back-net:
+      elliotwils0n-web-project-back-net:
         aliases:
           - postgres
 
-  web-project-backend:
+  elliotwils0n-web-project-backend:
     depends_on: 
-      - web-project-db
-    container_name: web-project-backend
+      - elliotwils0n-web-project-db
+    container_name: elliotwils0n-web-project-backend
     image: maven:3.8.6-jdk-11-slim
     expose: 
       - 8080
@@ -36,17 +36,17 @@ services:
     volumes:
       - ./backend-app:/root/app
       - ./storage:/root/storage
-      - web-project-mvn-repo:/root/.m2
+      - elliotwils0n-web-project-mvn-repo:/root/.m2
     networks:
-      web-project-back-net: {}
-      web-project-front-net:
+      elliotwils0n-web-project-back-net: {}
+      elliotwils0n-web-project-front-net:
         aliases:
           - backend
 
-  web-project-frontend:
+  elliotwils0n-web-project-frontend:
     depends_on: 
-      - web-project-backend
-    container_name: web-project-frontend
+      - elliotwils0n-web-project-backend
+    container_name: elliotwils0n-web-project-frontend
     image: node:18-slim
     ports:
       - 4200:4200
@@ -56,13 +56,13 @@ services:
     volumes:
       - ./frontend-app:/root/app
     networks:
-      - web-project-front-net
+      - elliotwils0n-web-project-front-net
 
 volumes:
-  web-project-db-volume: {}
-  web-project-mvn-repo: {}
+  elliotwils0n-web-project-db-volume: {}
+  elliotwils0n-web-project-mvn-repo: {}
 
 networks:
-  web-project-back-net: {}
-  web-project-front-net: {}
+  elliotwils0n-web-project-back-net: {}
+  elliotwils0n-web-project-front-net: {}
   

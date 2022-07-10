@@ -13,6 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,11 +34,9 @@ public class AccountEntity {
     @Column(name = "password", length = 60, nullable = false)
     private String passwordHash;
 
-    @OneToOne(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private AccessTokenEntity accessToken;
+//    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+//    private List<SessionEntity> sessionEntity = new ArrayList<>();
 
-    @OneToOne(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private RefreshTokenEntity refreshToken;
 
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<FileEntity> files;

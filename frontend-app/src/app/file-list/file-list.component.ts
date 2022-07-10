@@ -3,6 +3,7 @@ import { FileInfo } from '../models/file-info.model';
 import { NotificationService } from '../services/notification.service';
 import { saveAs } from 'file-saver';
 import { ApiCallerService } from '../services/api-caller.service';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -19,7 +20,7 @@ export class FileListComponent implements OnInit {
   file: File | null = null;
   InputVar: ElementRef | null = null;
 
-  constructor(private apiCallerSerivce: ApiCallerService, private notificationService: NotificationService) { }
+  constructor(private apiCallerSerivce: ApiCallerService, private notificationService: NotificationService, private router: Router) { }
 
   ngOnInit(): void {
     this.page = 1;
@@ -34,7 +35,9 @@ export class FileListComponent implements OnInit {
       error: error => {
         const errorMessage = error.error.message ? error.error.message : 'Something went wrong.';
         this.notificationService.pushNotification('Error', errorMessage);
-        localStorage.clear();
+        if(error.error.status == 401)
+                localStorage.clear();
+                this.router.navigateByUrl('/signin')
       }
     });
   }
@@ -48,6 +51,9 @@ export class FileListComponent implements OnInit {
       error: error => {
         const errorMessage = error.error.message ? error.error.message : 'Something went wrong.';
         this.notificationService.pushNotification('Error', errorMessage);
+        if(error.error.status == 401)
+                localStorage.clear();
+                this.router.navigateByUrl('/signin')
       }
     });
   }
@@ -61,6 +67,9 @@ export class FileListComponent implements OnInit {
       error: error => {
         const errorMessage = error.error.message ? error.error.message : 'Something went wrong.';
         this.notificationService.pushNotification('Error', errorMessage);
+        if(error.error.status == 401)
+                localStorage.clear();
+                this.router.navigateByUrl('/signin')
       }
     });
   }
@@ -78,7 +87,10 @@ export class FileListComponent implements OnInit {
           },
           error: error => {
             const errorMessage = error.error.message ? error.error.message : 'Something went wrong.';
-        this.notificationService.pushNotification('Error', errorMessage);
+            this.notificationService.pushNotification('Error', errorMessage);
+            if(error.error.status == 401)
+                localStorage.clear();
+                this.router.navigateByUrl('/signin')
         }
       });
     } else {

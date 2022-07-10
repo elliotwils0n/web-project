@@ -4,22 +4,16 @@ create table accounts (
     password varchar(60) not null
 );
 
-create table access_tokens (
+create table sessions (
+    id uuid primary key,
     account_id uuid not null,
+    active boolean not null,
     access_token varchar(400) not null,
-    generated_at timestamp not null,
-    valid_to timestamp not null,
-    constraint pk_account_access_tokens primary key (account_id),
-    constraint fk_account_access_token_account_id foreign key (account_id) references accounts(id)
-);
-
-create table refresh_tokens (
-    account_id uuid not null,
     refresh_token varchar(400) not null,
-    generated_at timestamp not null,
-    valid_to timestamp not null,
-    constraint fk_account_refresh_tokens primary key (account_id),
-    constraint fk_account_refresh_token_account_id foreign key (account_id) references accounts(id)
+    access_token_expiration timestamp not null,
+    refresh_token_expiration timestamp not null,
+    modification_time timestamp not null,
+    constraint fk_account_access_token_account_id foreign key (account_id) references accounts(id)
 );
 
 create table files (

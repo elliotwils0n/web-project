@@ -1,12 +1,11 @@
 package io.github.elliotwils0n.hosting.backend.service.implementation;
 
 import io.github.elliotwils0n.hosting.backend.dto.AccountDto;
-import io.github.elliotwils0n.hosting.backend.entity.AccessTokenEntity;
-import io.github.elliotwils0n.hosting.backend.entity.RefreshTokenEntity;
+import io.github.elliotwils0n.hosting.backend.entity.SessionEntity;
 import io.github.elliotwils0n.hosting.backend.model.Credentials;
 import io.github.elliotwils0n.hosting.backend.model.TokenPair;
-import io.github.elliotwils0n.hosting.backend.repository.AccessTokensRepository;
-import io.github.elliotwils0n.hosting.backend.repository.RefreshTokensRepository;
+import io.github.elliotwils0n.hosting.backend.model.TokenPairProjection;
+import io.github.elliotwils0n.hosting.backend.repository.SessionsRepository;
 import io.github.elliotwils0n.hosting.backend.service.AuthorizationServiceInterface;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -24,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,10 +35,7 @@ public class AuthorizationService implements AuthorizationServiceInterface {
     private AccountsService accountsService;
 
     @Autowired
-    private AccessTokensRepository accessTokensRepository;
-
-    @Autowired
-    private RefreshTokensRepository refreshTokensRepository;
+    private SessionsRepository sessionsRepository;
 
     @Value("${authorization.access.token.expiration}")
     private Long accessTokenExpirationTime;
@@ -49,50 +46,54 @@ public class AuthorizationService implements AuthorizationServiceInterface {
     @Value("${authorization.token.signing.secret}")
     private String tokenSigningSecret;
 
-    @Override
-    public TokenPair refreshToken(String refreshToken) {
-
-        Jws<Claims> claims = getParsedRefreshToken(refreshToken);
-        UUID accountId = UUID.fromString(claims.getBody().get("account_id").toString());
-
-        LocalDateTime now = LocalDateTime.now();
-        String newAccessToken = getNewAccessToken(accountId, now);
-        String newRefreshToken = getNewRefreshToken(accountId, now);
-
-        return new TokenPair(newAccessToken, newRefreshToken);
-    }
 
     @Override
-    public TokenPair generateToken(Credentials credentials) {
-        boolean validation = accountsService.isPasswordValid(credentials);
-
-        if (!validation) {
+    public TokenPair generateTokenPair(Credentials credentials) {
+        if (!accountsService.isPasswordValid(credentials)) {
             throw new InvalidCredentialsException();
         }
 
         AccountDto account = accountsService.findByUsername(credentials.getUsername());
+        killOtherSessions(account.getId());
 
-        LocalDateTime now = LocalDateTime.now();
-        String newAccessToken = getNewAccessToken(account.getId(), now);
-        String newRefreshToken = getNewRefreshToken(account.getId(), now);
+        return getNewTokenPair(account.getId(), LocalDateTime.now());
+    }
 
-        return new TokenPair(newAccessToken, newRefreshToken);
+    @Transactional
+    private void killOtherSessions(UUID accountId) {
+        log.info("Killing previous active sessions for account {}", accountId);
+        List<SessionEntity> existingSessions = sessionsRepository.findAllByAccountIdAndActive(accountId, true);
+        existingSessions.forEach(session -> {
+            session.setActive(false);
+        });
+        sessionsRepository.saveAll(existingSessions);
     }
 
     @Override
-    public boolean isAccessTokenValid(String accessToken) {
+    public TokenPair refreshTokens(String refreshToken) {
+
+        Jws<Claims> claims = getParsedRefreshToken(refreshToken);
+        UUID accountId = UUID.fromString(claims.getBody().get("account_id").toString());
+        LocalDateTime now = LocalDateTime.now();
+
+        return getNewTokenPair(accountId, now);
+    }
+
+    @Override
+    public void validateAccessToken(String accessToken) {
         Jws<Claims> claims = parseJwtToken(accessToken);
 
-        if (!claims.getBody().getSubject().equals("access_token")) {
-            return false;
-        }
-
-        UUID accountId = UUID.fromString(claims.getBody().get("account_id").toString());
+        UUID sessionId = UUID.fromString(claims.getBody().getId());
         LocalDateTime expiration = claims.getBody().getExpiration().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 
-        Optional<AccessTokenEntity> accessTokenEntity = accessTokensRepository.findByAccountId(accountId);
+        Optional<SessionEntity> sessionEntity = sessionsRepository.findByIdAndActive(sessionId, true);
+        log.info("Validating access token {}...", sessionId);
 
-        return  accessTokenEntity.isPresent() && accessToken.equals(accessTokenEntity.get().getAccessToken()) && expiration.isAfter(LocalDateTime.now());
+        if(!claims.getBody().getSubject().equals("access_token") || sessionEntity.isEmpty() || !sessionEntity.get().isActive() || !accessToken.equals(sessionEntity.get().getAccessToken()) || expiration.isBefore(LocalDateTime.now())) {
+            log.info("Access token not validated. ");
+            throw new SessionExpiredException();
+        }
+        log.info("Access token validated successfully. ");
     }
 
     public Optional<UUID> getAccountIdFromAccessToken(String accessToken) {
@@ -100,77 +101,73 @@ public class AuthorizationService implements AuthorizationServiceInterface {
     }
 
     @Transactional
-    private String getNewAccessToken(UUID accountId, LocalDateTime time) {
-        String refreshToken = prepareAccessToken(accountId, time);
+    private TokenPair getNewTokenPair(UUID accountId, LocalDateTime time) {
+        Optional<SessionEntity> sessionEntity = sessionsRepository.findFirstByAccountIdAndActiveOrderByModificationTimeDesc(accountId, true);
 
-        Optional<AccessTokenEntity> accessTokenEntity = accessTokensRepository.findByAccountId(accountId);
-
-        accessTokenEntity.ifPresentOrElse(
+        sessionEntity.ifPresentOrElse(
                 entity -> {
-                    entity.setAccessToken(refreshToken);
-                    entity.setGeneratedAt(time);
-                    entity.setValidTo(time.plusMinutes(accessTokenExpirationTime));
-                    accessTokensRepository.save(entity);
+                    log.info("Token pair exist. Refreshing tokens for account {}.", accountId);
+                    String newAccessToken = prepareAccessToken(entity.getId(), entity.getAccountId(), time);
+                    String newRefreshToken = prepareRefreshToken(entity.getId(), entity.getAccountId(), time);
+
+                    entity.setAccessToken(newAccessToken);
+                    entity.setRefreshToken(newRefreshToken);
+                    entity.setAccessTokenExpiration(time.plusMinutes(accessTokenExpirationTime));
+                    entity.setRefreshTokenExpiration(time.plusMinutes(refreshTokenExpirationTime));
+                    entity.setModificationTime(LocalDateTime.now());
+                    sessionsRepository.save(entity);
+                    log.info("Token pair refreshed for account {}.", accountId);
                 },
                 () -> {
-                    AccessTokenEntity entity = new AccessTokenEntity();
+                    log.info("Token pair does not exist. Generating tokens for account {}.", accountId);
+                    UUID sessionID = UUID.randomUUID();
+                    String newAccessToken = prepareAccessToken(sessionID, accountId, time);
+                    String newRefreshToken = prepareRefreshToken(sessionID, accountId, time);
+
+                    SessionEntity entity = new SessionEntity();
+                    entity.setId(sessionID);
                     entity.setAccountId(accountId);
-                    entity.setAccessToken(refreshToken);
-                    entity.setGeneratedAt(time);
-                    entity.setValidTo(time.plusMinutes(accessTokenExpirationTime));
-                    accessTokensRepository.save(entity);
+                    entity.setAccessToken(newAccessToken);
+                    entity.setRefreshToken(newRefreshToken);
+                    entity.setAccessTokenExpiration(time.plusMinutes(accessTokenExpirationTime));
+                    entity.setRefreshTokenExpiration(time.plusMinutes(refreshTokenExpirationTime));
+                    entity.setActive(true);
+                    entity.setModificationTime(LocalDateTime.now());
+                    sessionsRepository.save(entity);
+                    log.info("Token pair generated for account {}.", accountId);
                 });
 
-        return refreshToken;
+        TokenPairProjection tokenPair = sessionsRepository
+                .findAccessTokenAndRefreshTokenByAccountIdAndActive(accountId, true)
+                .orElseThrow(SessionNotFoundException::new);
+
+        return new TokenPair(tokenPair.getAccessToken(), tokenPair.getRefreshToken());
     }
 
-    @Transactional
-    private String getNewRefreshToken(UUID accountId, LocalDateTime time) {
-        String refreshToken = prepareRefreshToken(accountId, time);
-
-        Optional<RefreshTokenEntity> refreshTokenEntity = refreshTokensRepository.findByAccountId(accountId);
-
-        refreshTokenEntity.ifPresentOrElse(
-                entity -> {
-                    entity.setRefreshToken(refreshToken);
-                    entity.setGeneratedAt(time);
-                    entity.setValidTo(time.plusMinutes(refreshTokenExpirationTime));
-                    refreshTokensRepository.save(entity);
-                },
-                () -> {
-                    RefreshTokenEntity entity = new RefreshTokenEntity();
-                    entity.setAccountId(accountId);
-                    entity.setRefreshToken(refreshToken);
-                    entity.setGeneratedAt(time);
-                    entity.setValidTo(time.plusMinutes(refreshTokenExpirationTime));
-                    refreshTokensRepository.save(entity);
-                });
-
-        return refreshToken;
-    }
-
-    private String prepareAccessToken(UUID accountId, LocalDateTime time) {
+    private String prepareAccessToken(UUID sessionId, UUID accountId, LocalDateTime time) {
+        log.info("Preparing access token for session {} and account {}.", sessionId, accountId);
         Date issuedAt = Date.from(Timestamp.valueOf(time).toInstant());
         Date expiration = Date.from(Timestamp.valueOf(time.plusMinutes(accessTokenExpirationTime)).toInstant());
 
         return Jwts.builder()
-                .claim("account_id", accountId)
+                .setId(sessionId.toString())
                 .setSubject("access_token")
-                .setId(UUID.randomUUID().toString())
+                .claim("account_id", accountId)
                 .setIssuedAt(issuedAt)
                 .setExpiration(expiration)
                 .signWith(getTokenSigningKey())
                 .compact();
     }
 
-    private String prepareRefreshToken(UUID accountId, LocalDateTime time) {
+    private String prepareRefreshToken(UUID sessionId, UUID accountId, LocalDateTime time) {
+        log.info("Preparing refresh token for session {} and account {}.", sessionId, accountId);
         Date issuedAt = Date.from(Timestamp.valueOf(time).toInstant());
         Date expiration = Date.from(Timestamp.valueOf(time.plusMinutes(refreshTokenExpirationTime)).toInstant());
 
         return Jwts.builder()
-                .claim("account_id", accountId)
+                .setId(sessionId.toString())
                 .setSubject("refresh_token")
-                .setId(UUID.randomUUID().toString())
+                .claim("account_id", accountId)
                 .setIssuedAt(issuedAt)
                 .setExpiration(expiration)
                 .signWith(getTokenSigningKey())
@@ -182,18 +179,23 @@ public class AuthorizationService implements AuthorizationServiceInterface {
                 .setSigningKey(getTokenSigningKey())
                 .build()
                 .parseClaimsJws(jwtString);
-
     }
 
     private Jws<Claims> getParsedRefreshToken(String refreshToken) {
         Jws<Claims> claims = parseJwtToken(refreshToken);
-        UUID accountId = UUID.fromString(claims.getBody().get("account_id").toString());
+        UUID sessionId = UUID.fromString(claims.getBody().getId());
 
-        Optional<RefreshTokenEntity> refreshTokenEntity = refreshTokensRepository.findByAccountId(accountId);
+        log.info("Validating session {}...", sessionId);
+        SessionEntity session = sessionsRepository.findByIdAndActive(sessionId, true).orElseThrow(SessionNotFoundException::new);
 
-        if(!claims.getBody().getSubject().equals("refresh_token") || refreshTokenEntity.isEmpty() || refreshTokenEntity.get().getValidTo().isBefore(LocalDateTime.now()) || !refreshTokenEntity.get().getRefreshToken().equals(refreshToken)) {
-            throw new InvalidRefreshedTokenProvided();
+        if(!claims.getBody().getSubject().equals("refresh_token") || session.getRefreshTokenExpiration().isBefore(LocalDateTime.now()) || !session.getRefreshToken().equals(refreshToken)) {
+            session.setActive(false);
+            sessionsRepository.save(session);
+            log.info("Session {} expired. Logging out.", sessionId);
+            throw new SessionExpiredException();
         }
+
+        log.info("Session {} validated.", sessionId);
 
         return claims;
     }

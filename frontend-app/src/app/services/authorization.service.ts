@@ -71,6 +71,7 @@ export class AuthorizationSerice implements CanActivate {
                 localStorage.setItem(this.accessToken, data.accessToken);
                 localStorage.setItem(this.refreshToken, data.refreshToken);
                 localStorage.setItem(this.sessionActive, 'true');
+                this.notificationService.pushNotification('Info', "Session refreshed.");
             },
             error: error => {
                 const errorMessage = error.error.message ? error.error.message : 'Error occurred while trying to refresh tokens.';

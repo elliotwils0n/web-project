@@ -47,12 +47,15 @@ public class FilesService implements FilesServiceInterface {
     public void saveFile(UUID accountId, MultipartFile file) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
         prepareUserDirectory(accountId);
 
+        log.info("Saving file metadata in database. ({} uploaded by {})", file.getOriginalFilename(), accountId);
         FileEntity fileEntity = saveFileInfoInDatabase(accountId, file.getOriginalFilename());
-        String filepath = String.format("%s/%s/%s.enc", rootDirectory, accountId, fileEntity.getId());
+        Path filePath = Path.of(String.format("%s/%s/%s.enc", rootDirectory, accountId, fileEntity.getId()));
 
-        Files.createFile(Path.of(filepath));
+        log.info("Encrypting file {} uploaded by account {}...", file.getOriginalFilename(), accountId);
+        Files.createFile(filePath);
         byte[] encryptedFile = encryptionService.encrypt(file.getBytes(), encryptionService.decryptKey(fileEntity.getEncryptionKey()));
-        Files.write(Path.of(filepath), encryptedFile);
+        Files.write(filePath, encryptedFile);
+        log.info("file {} uploaded by account {} has been encrypted and saved.", file.getOriginalFilename(), accountId);
     }
 
     @Override
@@ -60,7 +63,7 @@ public class FilesService implements FilesServiceInterface {
         FileEntity fileEntity = filesRepository.findByIdAndAccountId(fileId, accountId).orElseThrow(FileLinkedToAccountNotFoundException::new);
         String filepath = String.format("%s/%s/%s.enc", rootDirectory, accountId, fileId);
         byte [] encryptedFile = Files.readAllBytes(Path.of(filepath));
-
+        log.info("Account {} downloaded file {}", accountId, fileId);
         return new FileModel(fileEntity.getOriginalFilename(), encryptionService.decrypt(encryptedFile, encryptionService.decryptKey(fileEntity.getEncryptionKey())));
     }
 
@@ -72,10 +75,12 @@ public class FilesService implements FilesServiceInterface {
         String filepath = String.format("%s/%s/%s.enc", rootDirectory, accountId, fileId);
         Files.deleteIfExists(Path.of(filepath));
         filesRepository.delete(fileToDelete);
+        log.info("Account {} deleted file {}", accountId, fileId);
     }
 
     @Override
     public List<FileDto> getAllAccountFiles(UUID accountId) {
+        log.info("Returning list of files for account {}", accountId);
         return filesRepository.findAllByAccountIdOrderByUploadedAtDesc(accountId).stream()
                 .map(file -> new FileDto(file.getId(), file.getUploadedAt(), file.getOriginalFilename()))
                 .collect(Collectors.toList());
@@ -83,10 +88,12 @@ public class FilesService implements FilesServiceInterface {
 
     @EventListener
     public void onAccountDeletion(AccountDeletedEvent accountDeletedEvent) throws IOException {
+        log.info("Deleting all files associated with account {}", accountDeletedEvent.getAccountId());
         for (FileDto file : accountDeletedEvent.getAccountFiles()) {
             String filepath = String.format("%s/%s/%s.enc", rootDirectory, accountDeletedEvent.getAccountId(), file.getFileId());
             Files.deleteIfExists(Path.of(filepath));
         }
+        log.info("Deleting user directory for account {}", accountDeletedEvent.getAccountId());
         String userDirectory = String.format("%s/%s", rootDirectory, accountDeletedEvent.getAccountId());
         Files.deleteIfExists(Path.of(userDirectory));
     }
@@ -99,9 +106,10 @@ public class FilesService implements FilesServiceInterface {
     }
 
     private void prepareUserDirectory(UUID accountId) throws IOException {
-        String userDirectory = String.format("%s/%s", rootDirectory, accountId);
-        if (!Files.exists(Path.of(userDirectory))) {
-            Files.createDirectory(Path.of(userDirectory));
+        Path userDirectory = Path.of(String.format("%s/%s", rootDirectory, accountId));
+        if (!Files.exists(userDirectory)) {
+            Files.createDirectory(userDirectory);
+            log.info("User directory for {} has been created.", accountId);
         }
     }
 

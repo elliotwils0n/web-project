@@ -21,7 +21,6 @@ import java.security.spec.AlgorithmParameterSpec;
 
 
 @Service
-@Slf4j
 public class EncryptionService implements EncryptionServiceInterface {
 
     private final String masterKey;

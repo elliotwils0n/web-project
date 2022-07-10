@@ -6,11 +6,11 @@ import io.github.elliotwils0n.hosting.backend.model.TokenPair;
 
 public interface AuthorizationServiceInterface {
 
-    TokenPair refreshToken(String refreshToken);
+    TokenPair refreshTokens(String refreshToken);
 
-    TokenPair generateToken(Credentials credentials);
+    TokenPair generateTokenPair(Credentials credentials);
 
-    boolean isAccessTokenValid(String accessToken);
+    void validateAccessToken(String accessToken);
 
     class InvalidCredentialsException extends GenericServerException {
         public InvalidCredentialsException() {
@@ -18,9 +18,15 @@ public interface AuthorizationServiceInterface {
         }
     }
 
-    class InvalidRefreshedTokenProvided extends GenericServerException {
-        public InvalidRefreshedTokenProvided() {
-            super("Refreshing access token failed. Invalid refreshed token provided.");
+    class SessionNotFoundException extends GenericServerException {
+        public SessionNotFoundException() {
+            super("Session not found or expired.");
+        }
+    }
+
+    class SessionExpiredException extends GenericServerException {
+        public SessionExpiredException() {
+            super("Session expired.");
         }
     }
 

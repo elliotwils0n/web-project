@@ -39,6 +39,7 @@ public class AccountsService implements AccountsServiceInterface {
             throw new UsernameAlreadyTakenException();
         }
         AccountEntity account = accountsRepository.save(new AccountEntity(credentials.getUsername(), passwordEncoder.encode(credentials.getPassword())));
+        log.info("Account created for {}", credentials.getUsername());
         return new AccountDto(account.getId(), account.getUsername(), account.getPasswordHash());
     }
 
@@ -53,6 +54,7 @@ public class AccountsService implements AccountsServiceInterface {
         eventPublisher.publishEvent(new AccountDeletedEvent(this, accountId, accountFiles));
 
         accountsRepository.delete(account);
+        log.info("Account {} has been deleted.", accountId);
     }
 
     @Override

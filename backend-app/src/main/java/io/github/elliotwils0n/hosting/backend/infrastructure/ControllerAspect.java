@@ -23,10 +23,12 @@ public class ControllerAspect {
         try {
             return pjp.proceed();
         } catch (GenericServerException e) {
+            log.info("Exception occurred: {}", e.getMessage());
             return ResponseEntity
                     .badRequest()
                     .body(new ServerMessage(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
         } catch (Exception e) {
+            log.info("Exception occurred: {}", e.getMessage());
             e.printStackTrace();
             return ResponseEntity
                     .internalServerError()
