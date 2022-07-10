@@ -1,0 +1,84 @@
+
+<div class="btn-group mb-3">
+  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="refreshFileList()">Refresh list</button>
+  <!-- Upload file modal trigger -->
+  <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#uploadFileModal">Upload file</button>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-sm table-hover table-striped ">
+      <thead class="table-dark">
+        <tr>
+          <th scope="col" class="col-1">#</th>
+          <th scope="col" class="col-6">Original filename</th>
+          <th scope="col" class="col-3">Uploaded at</th>
+          <th scope="col" class="col-3">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let file of files | paginate: { id: 'file-list-pagination', itemsPerPage: 10, currentPage: page, totalItems: files.length }">
+          <th scope="row">{{file.fileId}}</th>
+          <td><a class="btn btn-sm" (click)="downloadFile(file.fileId, file.originalFilename)">{{file.originalFilename}}</a></td>
+          <td>{{file.uploadedAt}}</td>
+          <td>
+            <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="modal" [attr.data-bs-target]="'#deleteFileModal' + file.fileId">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+              </svg>
+            </button>
+          </td>
+          <!-- Delete account modal -->
+          <div class="modal fade" [id]="'deleteFileModal' + file.fileId" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="staticBackdropLabel">Delete file</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  Are you sure you want to delete {{file.originalFilename}}?
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, cancel</button>
+                  <button type="button" class="btn btn-danger" data-bs-dismiss="modal" (click)="deleteFile(file.fileId)">Yes, delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </tr>
+      </tbody>
+  </table>
+</div>
+    <pagination-controls class="my-pagination"
+      id="file-list-pagination" 
+      previousLabel="Prev" nextLabel="Next" 
+      [responsive]=true 
+      (pageChange)="page = $event">
+    </pagination-controls>
+
+<!-- Upload file modal -->
+<div class="modal fade" id="uploadFileModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="staticBackdropLabel" >Upload file</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form>
+        <div class="modal-body">
+          <div class="mb-3">
+            <input class="form-control" #inputFile type="file" id="formFile" required (change)="fileChange($event)">
+            <div class="form-text" *ngIf=" file != undefined && file.size > 10485760" >Limit for file is 10485760 bytes. Your file is {{file.size}} bytes large.</div>
+
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="clearInput()">Close</button>
+          <button type="submit" class="btn btn-primary" data-bs-dismiss="modal" [disabled]="inputFile === null || inputFile.value == '' || (file != undefined && file.size > 10485760)" (click)="uploadFile()">Upload</button>
+        </div>
+    </form>
+    </div>
+  </div>
+</div>
