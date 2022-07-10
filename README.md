@@ -28,7 +28,7 @@ For simplicity, in this project, master key is saved in application.properties f
 
 * Starting the project
 
-   ```sudo docker-compose up```
+   ```sudo docker compose up```
 
 * Clean up (not deleting volumes in case if you would like to run the project multiple times but shutdown for now.).
 
