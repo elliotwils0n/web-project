@@ -28,14 +28,14 @@ public class AccountEntity {
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     private UUID id;
 
-    @Column(name = "username", length = 30, nullable = false)
+    @Column(name = "username", length = 30, nullable = false, unique = true)
     private String username;
 
     @Column(name = "password", length = 60, nullable = false)
     private String passwordHash;
 
-//    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-//    private List<SessionEntity> sessionEntity = new ArrayList<>();
+    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<SessionEntity> sessionEntity = new ArrayList<>();
 
 
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL)

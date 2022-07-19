@@ -1,6 +1,6 @@
 create table accounts (
     id uuid primary key,
-    username varchar(30) not null,
+    username varchar(30) not null unique,
     password varchar(60) not null
 );
 
