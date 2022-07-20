@@ -31,15 +31,15 @@ __Manual installation__:
 
 ### Docker installation
 
-* Starting the project
+* Starting up the project
 
     ```docker compose up```
 
-* Stopping containers (not deleting images and volumes)
+* Shutting down the project (deleting containers and networks, keeping images and volumes)
 
     ```docker compose down```
 
-* Clean up (deleting images and volumes)
+* Shutting down and clean up (deleting containers, networks, images and volumes)
 
     ```docker compose down --rmi local -v```
 
@@ -67,8 +67,7 @@ __Manual installation__:
 ## Usage
 
 After installation, application will be available at
-
-> [localhost:4200](http://localhost:4200).
+> [localhost:4200](http://localhost:4200)
 
 
 [^1]:[Docker Engine](https://docs.docker.com/engine/install/)
