@@ -35,9 +35,10 @@ export class FileListComponent implements OnInit {
       error: error => {
         const errorMessage = error.error.message ? error.error.message : 'Something went wrong.';
         this.notificationService.pushNotification('Error', errorMessage);
-        if(error.error.status == 401)
-                localStorage.clear();
-                this.router.navigateByUrl('/signin')
+        if(error.error.status == 401) {
+          localStorage.clear();
+          this.router.navigateByUrl('/signin');
+        }
       }
     });
   }
@@ -51,9 +52,10 @@ export class FileListComponent implements OnInit {
       error: error => {
         const errorMessage = error.error.message ? error.error.message : 'Something went wrong.';
         this.notificationService.pushNotification('Error', errorMessage);
-        if(error.error.status == 401)
-                localStorage.clear();
-                this.router.navigateByUrl('/signin')
+        if(error.error.status == 401) {
+          localStorage.clear();
+          this.router.navigateByUrl('/signin');
+        }
       }
     });
   }
@@ -67,9 +69,10 @@ export class FileListComponent implements OnInit {
       error: error => {
         const errorMessage = error.error.message ? error.error.message : 'Something went wrong.';
         this.notificationService.pushNotification('Error', errorMessage);
-        if(error.error.status == 401)
-                localStorage.clear();
-                this.router.navigateByUrl('/signin')
+        if(error.error.status == 401) {
+          localStorage.clear();
+          this.router.navigateByUrl('/signin');
+        }
       }
     });
   }
@@ -88,9 +91,10 @@ export class FileListComponent implements OnInit {
           error: error => {
             const errorMessage = error.error.message ? error.error.message : 'Something went wrong.';
             this.notificationService.pushNotification('Error', errorMessage);
-            if(error.error.status == 401)
-                localStorage.clear();
-                this.router.navigateByUrl('/signin')
+            if(error.error.status == 401) {
+              localStorage.clear();
+              this.router.navigateByUrl('/signin');
+            }
         }
       });
     } else {
